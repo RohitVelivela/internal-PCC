@@ -1,0 +1,580 @@
+Purpose
+
+This document defines the architecture approach being followed for data engineering development in the Marketing Collaboration Center. The intent is to provide a reusable reference pattern that future collaboration center teams can follow when building domain-specific collaboration centers.
+
+The goal is to ensure that every collaboration center is built using a consistent, reusable, governed, observable, secure architecture.
+
+The Marketing Collaboration Center is used as the reference implementation. Other collaboration centers should reuse the same architecture principles, development standards, code patterns, governance model, and deployment approach, but they do not need to run in the same Azure subscription, resource group, region, or monitoring workspace as MCC.
+
+The standard is therefore:
+
+Reuse the architecture pattern and engineering standards, not necessarily the same physical Azure resources.
+
+Architecture Reuse Principle
+
+Future collaboration centers should be treated as domain-specific solutions built on a common data engineering architecture pattern.
+
+Each collaboration center may have its own:
+
+Azure subscription	Can be shared or separate based on landing zone, cost ownership, and security boundary
+Resource group	Usually separate by collaboration center and environment
+Azure AI Search service/index	Can be separate if knowledge/data boundaries differ
+Application Insights	Can be separate or connected to a shared monitoring model
+Log Analytics workspace	Can be shared centrally or domain-specific
+Key Vault	Usually separate by workload/environment
+VNet and private endpoints	Based on landing zone and network isolation requirements
+Data platform workspace	Can vary by data ownership, classification, and maturity
+API Management	Can be enterprise shared APIM or workload-specific APIM
+
+
+
+
+
+
+
+The reusable standard is the logical architecture, code structure, pipelines, data governance, security controls, integration governance, and operational readiness approach.
+
+The physical deployment topology must be decided per collaboration center based on enterprise landing zone, cost model, data ownership, security, and operational ownership.
+
+Reference Architecture Pattern
+
+Each collaboration center should follow the same logical architecture.
+
+Data Source / Integration Layer
+
+(to Landing)
+
+	
+
+All the data feeds to be available in this layer in different form structured/unstructured e.g. Excel files, PDFs, PPTs, Managed Data sources etc. Connectivity to individual data sources to be driven based on data source type. Specific linked services to be created and managed based on the need. Data to be available in Landing zone.
+
+The load to Landing could be manual/automated depending on the understanding with business team or frequency of the data availability.
+
+
+
+
+Load/Copy
+
+(to Bronze)
+
+	RAW data from Landing to be copied as is to the BRONZE layer to ensure collection of CC specific data in available in designated date driven structure 
+
+
+Transformation Layer
+
+(to Silver)
+
+	Wherever applicable, logic to be built for specific transformation needs on top of incoming source data from Bronze to Silver using Notebooks. The Silver layer would usually contain the data in normalized form. 
+Gold Layer	(Fabric  or Synapse) / OneLake / ADLS / Cosmos DB depending on data type, maturity, and domain requirements. This layer could potentially keep the data in de-normalized form for easy and faster read.
+Auditing Layer	Each Data pipeline must have audit mechanism implemented to ensure smooth tracking of the pipeline executions
+Observability Layer	Pipeline Logs, Log Analytics, Azure Monitor (this layer could be optional given that there may not be large number of pipelines in the system e.g. more than 15-20)
+Security Layer	Entra ID, managed identity, RBAC, private networking, Key Vault, encryption, and least privilege access
+
+
+
+
+
+
+
+This means every collaboration center should look similar from an architecture and control perspective, even if it is deployed into a different subscription or resource group.
+
+Pipeline Development Pattern
+
+For the MCC MVP, pipelines are being created using the Azure Synapse Analytics Pipeline approach.
+
+
+
+
+
+
+
+The MCC implementation uses the following pattern:
+
+Master Pipeline
+
+with Audit Tasks
+
+	
+
+Built new pipeline which has standard Audit tasks and a task to call child pipeline.
+
+This can be used as a template in other collaboration workstreams
+
+
+
+
+Language for
+
+Notebook tasks
+
+	Python/pySpark
+Spark pool settings	
+
+
+Spark pool size	Start with SMALL (3 to 10 nodes). Based on need, increase the size after thorough analysis of workload
+Testing	Manual
+Monitoring	Connect to Synapse workspace
+Observability	Application Insights, Log Analytics, Monitoring tab in Synapse Workspace
+
+
+
+
+
+
+
+Other collaboration centers should use the same approach, but they may choose their own synapse workspace, spark pool size, resource group, subscription, environment, and region based on their landing zone.
+
+The practical guidance is:
+
+Use individual source or source files logic inside your child pipeline, but keep the code structure, shared modules, master pipelines, and observability aligned to the common collaboration center architecture standard.
+
+Standard Repository and Code Structure
+
+Each hosted agent should follow a repeatable structure.
+
+infra	Infrastructure and deployment configuration
+Linked Services	Main integration points to different services/layers
+Datasets	Item to connect to source/target connection
+Pipelines	Logical grouping of tasks to perform end-to-end data processing
+Integration Runtime (IR)	
+
+Core compute engine acts as bridge between pipeline and target environment.
+
+In case managed data services are supposed to be connected outside of Azure, Self-Hosted IR should be preferred
+
+This may become part of code repo instead of IAC based only on the need of specific IR for any collaboration center
+
+
+Notebooks/SQL scripts	Actual business and tech logic
+Triggers	Kicks off the pipeline based on schedule/event/manual
+
+
+
+
+
+
+
+Current MCC examples include: all above folders except the TRIGGERs as they are not yet defined.
+
+
+
+
+
+
+
+Future collaboration centers should follow the same structure, replacing MCC-specific folders with their own domain-specific content.
+
+Standards Implementation Approach
+Reusability
+
+
+
+
+Standard
+
+Solutions should be designed using reusable patterns, shared components, common services, and repeatable engineering standards. Capabilities that are useful across collaboration centers should be created once as a pattern or shared component and reused, instead of rebuilt separately for every domain.
+
+
+
+
+How MCC Implements This
+
+MCC implements reusability at multiple levels.
+
+
+
+
+Reusable Master Pipeline Template
+
+Different subject area pipelines for MCC (such as CFM, Heatmap) utilize a standard master pipeline per subject area. This ensures that each subject area pipelines have a consistent structure for code, infrastructure, deployment, environment configuration, and testing.
+
+Act Log Start	Logs the start of the pipeline
+Act Lookup	Checks for Environment-specific configuration e.g. spark pool
+Act Set Var	Sets the config value 
+Child Pipeline	Executes the subject area pipeline
+Act Set Var	Environment-specific configuration
+Act Log end	Logs the end of the pipeline
+Act Log Aggregator	Consolidates the pipeline running details for current execution
+
+
+
+
+Shared Platform Capabilities
+
+Collaboration centers could reuse common platform capabilities such as:
+
+Azure Synapse Workspace	Ingestion and Analytics platform
+Azure Cosmos DB	JSON storage for data to be consumed by UI
+ADLS	Zone based storage
+Log Analytics	Centralized log analysis
+Azure Monitor	Monitoring, dashboards, and alerts
+Entra ID	Identity and access control
+Key Vault	Secrets and key management
+CI/CD pipelines	Repeatable deployment
+
+
+
+
+
+
+
+These services may be physically shared or separately deployed depending on the collaboration center’s landing zone and ownership model.
+
+Reusable Pattern for Other Collaboration Centers
+
+Future collaboration centers should:
+
+Start from the same repository structure.
+Reuse shared code patterns such as master pipeline, error handling, configuration handling etc.
+Reuse platform standards for logging, audit, observability, security, data governance, and human approval.
+Deploy into the appropriate subscription, resource group, Synapse workspace, region, and monitoring workspace based on the collaboration center’s landing zone and ownership model.
+Avoid hard-coding environment-specific values such as subscription IDs, resource group names, spark pool names, endpoint URLs, Key Vault names, or storage folder/container names/locations.
+Use configuration files, environment variables, IaC parameters, and CI/CD variables so the same codebase pattern can be deployed across different environments.
+Resiliency
+Standard
+
+Solutions should be able to withstand abrupt/intermittent disruptions/failures and recover rapidly. Instead of attempting to prevent all issues, resilient design accepts that failures will happen and ensures the software continues to function—even in a degraded state—without causing a total system crash
+
+How MCC Implements This
+
+MCC uses built in RETRY mechanism.
+
+
+
+
+Tasks in Synapse pipeline uses the retry mechanism in case of failures.
+As a standard, 3 tries are set per interval of 30 seconds.
+
+
+
+
+
+
+
+
+
+
+Future collaboration centers should:
+
+Start from the same repository structure.
+Use the same retry mechanism for pipeline tasks
+Apply additional retry mechanism inside the code of notebooks in case of any high volume/critical workload.
+Each collaboration center can decide the retry interval based on their requirement
+
+
+
+
+Logging and Audit
+Standard
+
+Solutions should record important system actions, data access, integration activity, and operational events. This creates a reliable record of what happened, when it happened, who performed the action, and what information was used.
+
+How MCC Implements This
+
+MCC implements logging and audit across multiple layers.
+
+Data Layer	Data access, ingestion job status, transformation status, data refresh
+Integration Layer	dataload status, retries, failures
+Security Layer	Authentication, authorization, role-based access events
+Operations Layer	Exceptions, timeouts, deployment events, health signals
+
+
+
+
+
+
+
+Monitoring tab in Synapse helps in Operation layer. Application Insights and Log Analytics are used to store runtime telemetry centrally.
+
+Reusable Pattern for Other Collaboration Centers
+
+Every collaboration center should use the same audit envelope, even if logs are stored in a different Application Insights instance or Log Analytics workspace.
+
+The standard is:
+
+Capture the same audit fields consistently (and additional if required), but store them in the monitoring workspace approved for that collaboration center’s deployment topology.
+
+Observability
+Standard
+
+Solutions should provide end-to-end operational visibility across the application, infrastructure, data, integration. Teams should be able to monitor health, performance, failures, latency, cost, usage, and business-process bottlenecks.
+
+How MCC Implements This
+
+MCC uses Synapse-native and Azure-native observability.
+
+Application Insights	Store runtime telemetry, errors, latency
+Log Analytics	Query and analyze logs centrally
+Azure Monitor	Dashboards, metrics, alerts, operational monitoring
+Business monitoring	Track individual data sets, their delivery timeline etc.
+
+
+
+
+
+
+
+The key architecture principle is that Azure Synapse already provides built-in observability, so collaboration center teams do not need to build all functionality from scratch.
+
+Reusable Pattern for Other Collaboration Centers
+
+Every collaboration center should use the same observability pattern.
+
+Central logs	Log Analytics
+Alerts and dashboards	Azure Monitor
+Infrastructure health	Azure Monitor / Defender for Cloud
+Cost tracking	Azure Monitor / Custom Dashboard
+Business process monitoring	Custom dashboards over process events
+
+
+
+
+
+
+
+However, the actual monitoring resources may be shared or separate.
+
+Same platform team operates multiple collaboration centers	Shared Log Analytics and Azure Monitor dashboards may be appropriate
+Different business units own their own workloads	Separate Application Insights and Log Analytics may be appropriate
+Different data sensitivity boundaries exist	Separate monitoring resources may be required
+Central operations team needs visibility	Use central dashboards or cross-workspace queries
+
+
+
+
+Security and Access Control
+Standard
+
+Solutions should follow security-by-design principles, including identity-based access, least privilege, secure networking, encryption, managed identities, secrets management, and controlled access to data and services.
+
+How MCC Implements This
+
+MCC implements security through the following controls.
+
+Identity	Microsoft Entra ID
+Authentication	SSO, MFA, OAuth / Entra ID tokens
+Authorization	RBAC and role-based access
+Service-to-service access	Managed identities
+Secrets	Azure Key Vault
+Network	Private endpoints, VNet integration, limited outbound routes, firewall/proxy rules
+Encryption	Encryption at rest and TLS 1.2+ in transit
+Data minimization	Only relevant content, data, and signals retained
+Development access	Entra ID groups and scoped permissions
+Platform protection	Defender for Cloud, DLP, policy controls
+
+
+
+
+
+
+
+Reusable Pattern for Other Collaboration Centers
+
+Future collaboration centers should not create separate security models. They should inherit the same security principles:
+
+Entra ID authentication.
+RBAC by user role.
+Managed identity for service-to-service calls (Preferrable).
+In TEMP_DEV environment, due to specific issues Synapse Managed Identity was not able to access the Azure Cosmos. Hence, with required approval, Cosmos URL and Key (both in Key Vault) was used in notebooks.
+Key Vault for secrets.
+Private endpoint and VNet-based access.
+Azure API Management for controlled APIs.
+No public access unless explicitly approved.
+Data access based on least privilege (role-based, row-level etc).
+
+However, each collaboration center may have its own Key Vault, VNet, private endpoints, managed identities, and RBAC groups based on deployment boundaries.
+
+The standard is:
+
+Reuse the same security pattern, but apply it within the collaboration center’s approved subscription, resource group, network boundary, and identity model.
+
+
+
+
+Data Governance
+Standard
+
+Solutions should manage data with clear ownership, classification, lineage, quality checks, retention rules, access policies, and AI-use approval. Data used by AI should be trusted, approved, current, scoped, cleaned where required, and fit for the intended use case.
+
+The data governance standard must answer five key questions:
+
+What data is being used?	Understand the actual content, fields, documents, and business meaning
+Does it contain sensitive data?	Identify confidential, restricted, regulated, personal, or commercially sensitive information
+What cleanup or redaction is required?	Remove, mask, redact, normalize, or exclude data before it is used by downstream (if applicable)
+Who approved it for downstream use?	Ensure data use is authorized and auditable
+
+
+
+
+
+
+
+How MCC Implements This
+
+MCC separates structured, unstructured, external, and static MVP data, and applies controlled ingestion and classification before the data is made available to agents.
+
+Structured data	Loaded into (Synapse or Fabric) / OneLake / Delta tables where available, or equivalent approved structured storage for MVP
+Unstructured documents	Processed using Document Intelligence and indexed into AI Search for grounded retrieval
+JSON signals / chunks	Stored in Cosmos DB where schema flexibility is required
+Static MVP files	Manually controlled, approved, and uploaded for MVP use only
+Strategy documents	Classified, scoped, and processed through controlled ingestion
+Sensitive or restricted fields	Redacted, masked, excluded, or access-controlled before being exposed to downstream (if applicable)
+
+
+
+
+
+
+
+For MCC, data is not treated as generally available just because it exists in a source system or document library. It must be explicitly approved, classified, and mapped to the downstream use cases (AI or non-AI) before ingestion or indexing.
+
+Data Cleanup and Redaction Approach
+
+Before data is used by agents, each source should be reviewed for cleanup, standardization, and redaction requirements.
+
+Data cleanup	Remove duplicates, fix invalid values, normalize taxonomy, correct missing mappings
+Data standardization	Align region, country, industry, portfolio, partner, campaign, and account naming
+Data minimization	Retain only fields required for the approved use cases
+Sensitive data review	Identify PII, credentials, customer-sensitive information, financial sensitivity, legal content, or restricted internal content
+Redaction / masking	Mask personal identifiers, remove credentials, redact sensitive commercial details where not required
+Exclusion	Exclude draft, outdated, unapproved, or non-relevant data from storage
+Access control	Restrict sensitive sources to approved roles, agents, and workflows
+Metadata tagging	Add source, owner, classification, usage purpose, date, version, and approval status
+
+
+
+
+Reusable Pattern for Other Collaboration Centers
+
+Every collaboration center should maintain a data-source register before using data for specific use cases.
+
+Source name	System, file, document library, API, database, report, or external source
+Source owner	Business owner and technical/data owner
+Source description	What the source contains in plain business terms
+Data contents / fields	Key fields, entities, document types, metrics, or attributes included
+Data classification	Public, Internal, Confidential, Restricted, Regulated, or Sensitive Personal Data
+Sensitive / PII / Confidential data present	Yes/No, with description of data type if present
+Cleanup required	Data quality fixes, taxonomy mapping, deduplication, format correction, or normalization required
+Redaction / masking required	Fields or document sections that must be redacted, masked, tokenized, or excluded
+Approved AI use cases	Specific use cases where the data is allowed
+Ingestion method	Manual upload, batch pipeline, API, connector, document processing, or search grounding
+Storage location	OneLake, Synapse, ADLS, Cosmos DB, AI Search, SQL, Blob Storage, or other approved store
+Refresh frequency	Static, on demand, daily, weekly, monthly, near real-time
+Retention rule	How long raw, processed, indexed, and audit data is retained
+Access policy	Which users, roles, services, and agents can access it
+
+
+
+
+
+
+
+Standard Principle
+
+Use approved, scoped, classified, cleaned, and traceable data sources only. Do not ingest broad enterprise content or expose data without explicit approval, documented classification, required cleanup/redaction, and clear mapping to approved use cases.
+
+Operational Readiness
+Standard
+
+Solutions should be supportable after delivery through clear deployment processes, environment management, monitoring, incident handling, release controls, documentation, and ownership.
+
+How MCC Implements This
+
+MCC is implementing operational readiness through:
+
+Deployment	Azure Developer CLI and azd deploy
+Packaging	Container image deployment
+Infrastructure	IaC / Bicep / environment configuration
+Source control	GitHub repository and branches
+CI/CD	GitHub / Azure DevOps pipeline pattern
+Monitoring	Application Insights, Log Analytics, Azure Monitor
+Testing	Local testing, SME feedback
+Documentation	HLD, BRD, architecture notes, standard implementation docs
+Support ownership	Platform, data engineering, agentic engineering, product/business owners
+
+
+
+
+
+
+
+Environment and Resource Isolation
+
+Each collaboration center should define its own deployment topology before production release.
+
+Subscription strategy	Shared platform subscription or collaboration-center-specific subscription
+Resource group strategy	Resource groups by collaboration center, environment, or capability
+Environment separation	Dev, Test, UAT, Prod separation
+Synapse workspace strategy	Shared workspace or separate workspace per collaboration center
+Monitoring strategy	Shared Log Analytics workspace or workload-specific workspace
+Data boundary	Shared data foundation or domain-specific data store
+Network boundary	Shared VNet, spoke VNet, or workload-specific private network
+Cost ownership	Which team/cost center owns consumption
+Access ownership	Who grants and reviews access
+Support ownership	Who operates the workload after release
+
+
+
+
+
+
+
+The deployment decision should be documented per collaboration center.
+
+The architecture standard defines what capabilities and controls are required. The landing zone design defines where those capabilities are deployed.
+
+Operational Readiness Checklist
+
+Before production release, each collaboration center should complete an operational readiness checklist.
+
+Deployment	Repeatable deployment command or pipeline
+Environments	Dev/Test/UAT/Prod separation
+Secrets	Stored in Key Vault
+Monitoring	Dashboards and alerts configured
+Logging	Logs visible in Log Analytics
+Access	RBAC validated
+Rollback	Release rollback approach defined
+Support	Support owner and escalation path defined
+Runbook	Incident handling steps documented
+Testing	Functional, security, performance, and SME validation complete
+
+
+
+
+Standard-by-Standard Summary Table
+
+
+
+
+Reusability	MCC uses a standard Synapse based pipelines, notebooks, shared pySpark/python code, shared toolbox YAML, and shared platform patterns.	Reuse the same architecture pattern, code structure, shared modules, toolbox approach, and governance standards. Deploy into the appropriate subscription, resource group, Foundry project, and monitoring workspace based on each collaboration center’s landing zone and ownership model.
+Logging and Audit	Captures user actions, executions, exceptions, and operational events.	Use a standard audit envelope for every type of data load
+Observability	Uses Application Insights, Log Analytics, Azure Monitor.	Use the same observability pattern. Monitoring resources may be shared or separate based on operating model and data boundaries.
+Security and Access Control	Uses Entra ID, RBAC, managed identity, Key Vault, private networking, encryption, and least privilege.	Reuse the same security pattern within each collaboration center’s approved subscription, network, and identity boundary.
+Data Governance	Uses approved MVP sources, classification, (Synapse or Fabric)/OneLake, Cosmos DB, AI Search, and Document Intelligence.	Maintain a data-source register with owner, classification, lineage, quality, retention, and access policy.
+Operational Readiness	Uses azd deploy, containerization, GitHub, IaC, monitoring, runbooks, and testing.	Complete a standard readiness checklist before production release. Deployment topology may differ per collaboration center.
+Final Architecture Principle
+
+Build each collaboration center as a domain-specific solution using common architecture patterns and platform standards.
+
+Domain teams should customize:
+
+Business logic
+Tools
+Workflows
+Data sources
+Deployment topology
+
+But they should not recreate foundational patterns for:
+
+Identity
+Security
+Observability
+Logging and audit
+Data governance
+Deployment and operational readiness
+
+The final principle is:
+
+Collaboration centers should reuse the same architecture standards and engineering patterns, while deploying into the subscription, resource group, (Synapse or Fabric) workspaces, monitoring workspace, network, and data environment appropriate for their domain and enterprise landing zone.
+
+This ensures every collaboration center is faster to build, easier to govern, safer to operate, simpler to audit, and better aligned to enterprise architecture standards.
