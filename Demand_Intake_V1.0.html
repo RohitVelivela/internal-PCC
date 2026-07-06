@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demand Intake User Story — AI Studio Delivery Command Center</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1a1a1a; margin: 0; padding: 0; background: white; }
+.page { max-width: 820px; margin: 0 auto; padding: 20px 0 36px; }
+h1 { font-size: 20pt; font-weight: 700; color: #00205B; margin: 0 0 4px; }
+h2 { font-size: 13pt; font-weight: 700; color: #00205B; margin: 32px 0 8px; border-bottom: 2px solid #00205B; padding-bottom: 4px; }
+h3 { font-size: 10.5pt; font-weight: 700; color: #00205B; margin: 16px 0 4px; }
+p { margin: 0 0 8px; line-height: 1.6; font-size: 10pt; }
+ul, ol { margin-top: 6px; margin-bottom: 10px; padding-left: 22px; }
+li { margin-bottom: 4px; line-height: 1.5; font-size: 9.5pt; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; font-size: 9.5pt; }
+th { background: #00205B; color: white; padding: 8px 10px; text-align: left; font-weight: 600; vertical-align: top; }
+td { padding: 7px 10px; border-bottom: 1px solid #ddd; vertical-align: top; line-height: 1.5; }
+tr:nth-child(even) td { background: #f5f7fb; }
+.cover-bar { height: 8px; background: #00205B; margin-bottom: 28px; }
+.subtitle { font-size: 12pt; color: #444; margin: 0 0 6px; }
+.meta { font-size: 9pt; color: #555; margin-bottom: 16px; }
+.meta span { margin-right: 24px; }
+.change-note { background: #E8F5E9; border-left: 4px solid #2E7D32; padding: 10px 14px; font-size: 9pt; color: #1B5E20; margin: 14px 0 24px; }
+.phase { padding: 9px 14px; margin: 28px 0 6px; border-radius: 4px; background:#BBDEFB; border-left:5px solid #0D47A1; }
+.phase .pl { font-size:11pt; font-weight:700; color:#0D47A1; }
+.phase .ps { font-size:9pt; color:#444; display:block; margin-top:2px; }
+.mh { background:#E8EDF6; padding:8px 12px; border-left:4px solid #00205B; margin:16px 0 8px; }
+.mh strong { font-size:11pt; color:#00205B; }
+.mh span { font-size:9pt; color:#555; display:block; margin-top:2px; }
+.rb { border:1px solid #dde3f0; border-radius:5px; padding:12px 14px; margin-bottom:10px; }
+.rt { font-size:10pt; font-weight:700; color:#00205B; margin-bottom:5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.rd { font-size:9.5pt; color:#1a1a1a; line-height:1.6; margin-bottom:7px; }
+.re { background:#f5f7fb; border-left:3px solid #90A4C8; padding:7px 11px; font-size:9pt; color:#333; line-height:1.6; }
+.re strong { color:#00205B; }
+.ra { background:#E3F2FD; border-left:3px solid #1565C0; padding:7px 11px; font-size:9pt; color:#0D2E5A; line-height:1.6; margin-top:6px; }
+.ra strong { color:#0D47A1; }
+.badge { font-size:7.5pt; font-weight:700; padding:2px 7px; border-radius:10px; white-space:nowrap; }
+.b-agent { background:#E3F2FD; color:#0D47A1; }
+.b-cust { background:#C8E6C9; color:#1B5E20; }
+.b-new { background:#FCE4EC; color:#880E4F; }
+.b-auto { background:#C8E6C9; color:#1B5E20; }
+.b-both { background:#EDE7F6; color:#4527A0; }
+.b-risk { background:#FFEBEE; color:#B71C1C; }
+.b-sec { background:#FFF3E0; color:#BF360C; }
+.chip { border-radius: 3px; padding: 3px 7px; font-size: 8pt; font-weight: 700; display: inline-block; white-space: nowrap; }
+.c-mvp { background:#BBDEFB; color:#0D47A1; }
+.c-must { background:#C8E6C9; color:#1B5E20; }
+.c-should { background:#FFE0B2; color:#BF360C; }
+.c-could { background:#EDE7F6; color:#4527A0; }
+.stage-flow { display:flex; flex-wrap:wrap; gap:4px; align-items:center; margin:8px 0; }
+.stage-pill { background:#E8EDF6; color:#00205B; border:1px solid #c2cce0; border-radius:14px; padding:4px 11px; font-size:8.5pt; font-weight:600; }
+.stage-arrow { color:#90A4C8; font-size:11pt; }
+.footer { margin-top:48px; border-top:1px solid #ccc; padding-top:10px; font-size:8.5pt; color:#888; display:flex; justify-content:space-between; }
+.kv td:first-child { width: 28%; font-weight: 700; color: #00205B; }
+.matrix th { font-size: 9pt; }
+.matrix td:first-child { font-weight: 700; color:#00205B; }
+pre { white-space: pre-wrap; background:#f5f7fb; border:1px solid #dde3f0; padding:10px 12px; font-family: Consolas, monospace; font-size:8.5pt; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="cover-bar"></div>
+<p class="subtitle">NTT DATA — AI Studio Platform</p>
+<h1>User Story — Demand Intake Agent</h1>
+<p class="subtitle">AI Studio Delivery Command Center — MVP Requirement Detail</p>
+<div class="meta">
+<span><strong>User Story ID:</strong> DM-001</span>
+<span><strong>Version:</strong> 1.0</span>
+<span><strong>Date:</strong> July 2026</span>
+<span><strong>Status:</strong> Draft for Product Review</span>
+</div>
+
+<div class="change-note">
+<strong>Scope of this document:</strong>
+<ul>
+<li>Defines the MVP user story for a Foundry-hosted Demand Intake Agent.</li>
+<li>Covers two customer-facing channels: Microsoft Teams and embedded WebChat in the WebApp.</li>
+<li>Focuses on direct customer demand submission, adaptive guided intake, validation, duplicate detection, customer confirmation, record creation, status visibility, and audit logging.</li>
+<li>Excludes downstream scoring, governance triage, CPQ creation, routing, and delivery allocation except where required as integration handoff points.</li>
+</ul>
+</div>
+
+<h2>1. User Story Summary</h2>
+<table class="kv">
+<tr><td>Epic</td><td>Demand Management — Customer-facing Intake</td></tr>
+<tr><td>Feature</td><td>Foundry-hosted Demand Intake Agent available through Teams and WebChat</td></tr>
+<tr><td>Primary user</td><td>Customer user, such as transformation director, product owner, business sponsor, or authorised demand submitter</td></tr>
+<tr><td>Secondary users</td><td>NTT DATA governance lead, NTT DATA platform administrator, support analyst</td></tr>
+<tr><td>Release</td><td><span class="chip c-mvp">MVP</span></td></tr>
+<tr><td>Priority</td><td><span class="chip c-must">Must have</span></td></tr>
+<tr><td>Channels</td><td>Microsoft Teams bot/channel app and embedded WebChat in the AI Studio Delivery Command Center WebApp</td></tr>
+<tr><td>Hosting pattern</td><td>Azure AI Foundry-hosted conversational agent with secure API integration to the platform data layer</td></tr>
+</table>
+
+<div class="rb">
+<div class="rt">User story <span class="badge b-cust">Customer-facing</span><span class="badge b-agent">Agent-led</span><span class="badge b-new">New in MVP</span></div>
+<div class="rd"><strong>As an authorised customer user,</strong> I want to submit a new AI Studio demand item through a conversational agent in either Microsoft Teams or the WebApp WebChat, so that I can describe my request in plain language, be guided to provide the right information, check whether similar demand already exists, confirm the final captured record, and immediately track the submitted item without relying on email, forms, or an NTT DATA account team to manually raise it for me.</div>
+</div>
+
+<h2>2. Business Context</h2>
+<p>The Demand Intake Agent is the customer-facing front door for the AI Studio Delivery Command Center. The MVP requires customers to raise demand directly through the platform rather than relying on account teams to relay requests. The agent must guide the customer through intake, adapt the question flow to the demand type, validate completeness, perform semantic duplicate detection, and create a governed demand item that becomes visible in the customer's tracker with status <strong>Submitted</strong>.</p>
+<p>This story supports the wider Demand Management module by creating a clean, structured demand item that can then be scored, prioritised, triaged, and routed by NTT DATA users. The customer must only see safe customer-facing fields and must never see internal scoring, commercial detail, capacity data, or governance rationale.</p>
+
+<h2>3. Goals and Outcomes</h2>
+<table>
+<tr><th>Goal</th><th>Outcome</th></tr>
+<tr><td>Remove manual intake dependency</td><td>Customers can raise demand themselves through Teams or WebChat without sending emails or asking an account manager to create the request.</td></tr>
+<tr><td>Capture complete structured demand records</td><td>The agent collects mandatory and conditional information needed for downstream triage and scoring.</td></tr>
+<tr><td>Improve submission quality</td><td>The agent asks clarifying questions, validates missing fields, and keeps incomplete submissions in draft rather than creating low-quality demand records.</td></tr>
+<tr><td>Reduce duplicate demand</td><td>The agent checks semantically similar demand items, including other business units within the same customer organisation, before final submission.</td></tr>
+<tr><td>Provide immediate customer visibility</td><td>Once confirmed, the demand item appears in the customer tracker with status Submitted and a customer-safe summary.</td></tr>
+<tr><td>Support governance and auditability</td><td>Every agent action, question, answer, duplicate match, customer confirmation, and record creation event is logged for audit and governance review.</td></tr>
+</table>
+
+<h2>4. Personas</h2>
+<table>
+<tr><th>Persona</th><th>Needs</th><th>Permissions</th></tr>
+<tr><td><strong>Customer submitter</strong></td><td>Raise a new demand item, answer guided questions, review duplicate suggestions, confirm submission, track status.</td><td>Can create and view own organisation's demand items based on customer access rules. Cannot view internal scores, CPQ, rates, margins, or capacity.</td></tr>
+<tr><td><strong>Customer approver / sponsor</strong></td><td>May submit strategic demand or validate business value and sponsorship details.</td><td>Can create demand and view organisation-level demand if provisioned with that role.</td></tr>
+<tr><td><strong>NTT DATA governance lead</strong></td><td>Review created demand items, inspect agent-captured context, view duplicate flags, continue triage.</td><td>Can view all demand fields, duplicate rationale, internal notes, scoring inputs, and audit trail.</td></tr>
+<tr><td><strong>Platform administrator</strong></td><td>Configure question flow, mandatory fields, demand types, thresholds, channel settings, fallback messages.</td><td>Can configure metadata, prompts, routing endpoints, and operational settings.</td></tr>
+<tr><td><strong>Support analyst</strong></td><td>Investigate failed submissions, identity or channel issues, stuck drafts, and incomplete records.</td><td>Can view technical logs and support metadata subject to data access controls.</td></tr>
+</table>
+
+<h2>5. Scope</h2>
+<div class="phase">
+<span class="pl">MVP Scope — Demand Intake Agent</span>
+<span class="ps">Foundry-hosted agent · Microsoft Teams · WebChat · Guided intake · Duplicate detection · Draft handling · Submission confirmation · Demand record creation</span>
+</div>
+
+<table>
+<tr><th style="width:50%">In scope</th><th>Out of scope for this story</th></tr>
+<tr><td>Azure AI Foundry-hosted Demand Intake Agent.</td><td>Demand scoring model implementation, except handoff trigger after demand creation.</td></tr>
+<tr><td>Teams channel for customer demand intake.</td><td>Commercial CPQ, SOW, billing, or opportunity pricing screens.</td></tr>
+<tr><td>Embedded WebChat channel within the WebApp.</td><td>Automated governance stage-gate enforcement; this is a Release 1 enhancement.</td></tr>
+<tr><td>Adaptive conversational intake by demand type.</td><td>Layer 2 classification and assessment record creation; explicitly post-MVP.</td></tr>
+<tr><td>Mandatory and conditional field validation.</td><td>Full Portfolio &amp; Delivery backlog management.</td></tr>
+<tr><td>Semantic duplicate detection across customer organisation demand backlog.</td><td>Automatic merging of duplicates; the agent must not auto-merge records.</td></tr>
+<tr><td>Customer review and confirmation before record creation.</td><td>Full multilingual support unless separately agreed.</td></tr>
+<tr><td>Draft state for incomplete submissions.</td><td>Offline submission or email-based intake.</td></tr>
+<tr><td>Agent action logging and traceability.</td><td>Customer visibility into internal scoring, commercial, or capacity data.</td></tr>
+</table>
+
+<h2>6. Main User Journey</h2>
+<p>The intake journey must work consistently across Teams and WebChat. Channel-specific user experience may differ, but the business outcome, captured data, validation rules, duplicate logic, and created demand record must be the same.</p>
+<div class="stage-flow">
+<span class="stage-pill">User opens agent</span><span class="stage-arrow">&rarr;</span>
+<span class="stage-pill">Agent verifies context</span><span class="stage-arrow">&rarr;</span>
+<span class="stage-pill">User describes request</span><span class="stage-arrow">&rarr;</span>
+<span class="stage-pill">Agent classifies demand type</span><span class="stage-arrow">&rarr;</span>
+<span class="stage-pill">Guided questions</span><span class="stage-arrow">&rarr;</span>
+<span class="stage-pill">Completeness check</span><span class="stage-arrow">&rarr;</span>
+<span class="stage-pill">Duplicate check</span><span class="stage-arrow">&rarr;</span>
+<span class="stage-pill">Customer confirms</span><span class="stage-arrow">&rarr;</span>
+<span class="stage-pill">Demand record created</span><span class="stage-arrow">&rarr;</span>
+<span class="stage-pill">Status: Submitted</span>
+</div>
+
+<h2>7. Detailed Functional Requirements</h2>
+
+<div class="mh"><strong>FR-001 — Agent availability across two channels</strong><span>The same Demand Intake Agent capability must be available in Microsoft Teams and embedded WebChat.</span></div>
+<div class="rb">
+<div class="rt">Channel access <span class="badge b-cust">Customer-facing</span></div>
+<div class="rd">The customer user must be able to start a new intake conversation from either Microsoft Teams or the AI Studio Delivery Command Center WebApp. The WebChat should be embedded within the customer portal and should recognise the logged-in user's organisation context. The Teams channel should support customer users who have been provisioned to access the agent through approved tenant or external access setup.</div>
+<div class="re"><strong>Expected behaviour:</strong> A user who starts in Teams and a user who starts in WebChat are guided through equivalent intake logic. The created demand record must have the same data structure regardless of channel.</div>
+</div>
+
+<div class="mh"><strong>FR-002 — User authentication and organisation context</strong><span>The agent must only allow authorised customer users to submit demand for their own organisation.</span></div>
+<div class="rb">
+<div class="rt">Identity and access control <span class="badge b-sec">Security</span></div>
+<div class="rd">Before a demand record is created, the platform must resolve the user's identity, organisation, permitted business units, and customer role. If the user's identity or organisation cannot be resolved, the agent must not create a demand item. It should provide a controlled message instructing the user to contact their platform administrator or NTT DATA support contact.</div>
+<div class="ra"><strong>Security behaviour:</strong> The agent must not ask the user to manually type their organisation as the sole source of truth if authenticated organisation context is available. User-provided organisation text can be captured for clarification, but record ownership must come from the platform identity context.</div>
+</div>
+
+<div class="mh"><strong>FR-003 — Natural language demand capture</strong><span>The user can begin by describing their need in plain language.</span></div>
+<div class="rb">
+<div class="rt">Initial request capture <span class="badge b-agent">Agent-led</span></div>
+<div class="rd">The agent must accept a free-text description such as "We want an AI tool to review supplier contracts" or "We need additional data engineering capacity for our chatbot build". The agent should extract an initial summary, potential demand type, business area, likely outcomes, and missing information.</div>
+<div class="re"><strong>In practice:</strong> The user writes a rough request. The agent responds with a short acknowledgement, proposes a demand type, and asks the next best question rather than forcing the user into a long static form.</div>
+</div>
+
+<div class="mh"><strong>FR-004 — Demand type classification</strong><span>The agent adapts the question flow based on the type of demand.</span></div>
+<table>
+<tr><th>Demand type</th><th>Examples</th><th>Additional question focus</th></tr>
+<tr><td><strong>AI use case / new solution</strong></td><td>New AI assistant, document intelligence tool, predictive model, workflow automation idea.</td><td>Business problem, target users, expected value, process impacted, data availability, timeline, sponsor.</td></tr>
+<tr><td><strong>Enhancement to existing solution</strong></td><td>Improve existing chatbot, add features to current analytics product, expand model coverage.</td><td>Existing solution name, current limitation, requested change, affected users, urgency, production impact.</td></tr>
+<tr><td><strong>Capacity request</strong></td><td>Need additional developers, architects, data engineers, testers, or delivery support.</td><td>Required roles, skill areas, start date, duration, expected commitment, location or shore preference.</td></tr>
+<tr><td><strong>Exploratory / unclear request</strong></td><td>Customer has a broad idea but does not know if it is a use case, enhancement, or capacity ask.</td><td>Clarification questions; agent may keep classification as Unknown until enough information is captured.</td></tr>
+</table>
+
+<div class="mh"><strong>FR-005 — Mandatory field capture</strong><span>The agent must collect the minimum data required to create a demand item.</span></div>
+<table>
+<tr><th>Field</th><th>Required?</th><th>Notes</th></tr>
+<tr><td>Demand title</td><td>Yes</td><td>Agent may generate suggested title from conversation and allow customer edit.</td></tr>
+<tr><td>Demand type</td><td>Yes</td><td>AI use case, enhancement, capacity request, or other configured type.</td></tr>
+<tr><td>Description</td><td>Yes</td><td>Plain language description of request, generated or confirmed from conversation.</td></tr>
+<tr><td>Business area</td><td>Yes</td><td>Customer business unit, department, function, or process area.</td></tr>
+<tr><td>Business problem / objective</td><td>Yes</td><td>What the customer is trying to solve or achieve.</td></tr>
+<tr><td>Expected value or benefit</td><td>Yes, where known</td><td>Can be financial, efficiency, risk reduction, customer experience, compliance, or qualitative benefit.</td></tr>
+<tr><td>Proposed timeline</td><td>Yes</td><td>Target start, desired completion, urgency, or key business date.</td></tr>
+<tr><td>Submitter details</td><td>Yes</td><td>Derived from authenticated user profile; not manually trusted as source of identity.</td></tr>
+<tr><td>Customer organisation</td><td>Yes</td><td>Derived from access context.</td></tr>
+<tr><td>Attachments or supporting links</td><td>Optional</td><td>May be captured as references if enabled by channel and platform policy.</td></tr>
+<tr><td>Consent to submit</td><td>Yes</td><td>User must confirm final summary before creation.</td></tr>
+</table>
+
+<div class="mh"><strong>FR-006 — Conditional field capture</strong><span>The agent asks extra questions when the demand type requires them.</span></div>
+<table>
+<tr><th>Condition</th><th>Additional fields</th></tr>
+<tr><td>Capacity request</td><td>Role type, skill requirements, number of people or estimated effort, required start date, duration, location preference, urgency driver.</td></tr>
+<tr><td>Enhancement to existing solution</td><td>Existing solution name, current owner if known, existing issue or limitation, affected users, release or deadline impact.</td></tr>
+<tr><td>New AI use case</td><td>Target process, data sources if known, expected users, decision or workflow impacted, risk/compliance sensitivity, desired outcome.</td></tr>
+<tr><td>Potential regulated or sensitive data use</td><td>Data sensitivity indicator, personal data indicator, compliance or security notes for NTT DATA review.</td></tr>
+<tr><td>Unclear or low-confidence classification</td><td>Agent asks clarification questions and may flag the item for governance review as ambiguous.</td></tr>
+</table>
+
+<div class="mh"><strong>FR-007 — Completeness validation and draft handling</strong><span>Incomplete requests must not become unactionable records.</span></div>
+<div class="rb">
+<div class="rt">Draft and validation handling <span class="badge b-both">Manual + Auto</span></div>
+<div class="rd">The agent must validate whether mandatory fields are present before creating a demand item. If required information is missing, the agent should continue asking focused questions. If the user cannot complete the submission, the agent should save the conversation as a draft demand intake where supported, mark the draft as incomplete, and allow the user to resume later.</div>
+<div class="re"><strong>Expected behaviour:</strong> The platform must not create a submitted demand item with no business area, no description, or no timeline. Incomplete items remain draft and are visible only as draft/intake-in-progress where customer visibility rules allow.</div>
+</div>
+
+<div class="mh"><strong>FR-008 — Semantic duplicate detection</strong><span>The agent checks for similar existing demand items before final submission.</span></div>
+<div class="rb">
+<div class="rt">Duplicate detection <span class="badge b-agent">Agent-led</span></div>
+<div class="rd">Before creating a new demand item, the agent must search existing demand records using semantic similarity, not keyword matching alone. The search must include demand items from the same customer organisation and, where access rules permit, other business units within that organisation. The agent must identify exact duplicates, likely duplicates, and related-but-distinct demand items.</div>
+<div class="ra"><strong>Agent behaviour:</strong> The agent must never auto-merge demand records. It should show a customer-safe summary of potential matches, ask whether the new request is the same or distinct, and record the user's choice. Similar but distinct items should be cross-referenced on creation.</div>
+</div>
+
+<table>
+<tr><th>Duplicate result</th><th>Customer-facing behaviour</th><th>Record behaviour</th></tr>
+<tr><td>High-confidence duplicate</td><td>Agent shows customer-safe summary of existing item and asks whether the user wants to follow existing item or continue as distinct.</td><td>If user confirms same initiative, no new demand item is created unless business rules require a linked submission record.</td></tr>
+<tr><td>Possible duplicate</td><td>Agent explains that a similar request exists and asks the user to confirm same vs distinct.</td><td>If distinct, new demand item is created with semantic duplicate reference and flagged for governance review.</td></tr>
+<tr><td>Related demand</td><td>Agent shows that related activity exists but does not block submission.</td><td>New demand item is created with a related-demand cross-reference.</td></tr>
+<tr><td>No match</td><td>Agent proceeds to final summary and confirmation.</td><td>New demand item is created normally.</td></tr>
+</table>
+
+<div class="mh"><strong>FR-009 — Customer review and confirmation</strong><span>The user must confirm the structured demand summary before submission.</span></div>
+<div class="rb">
+<div class="rt">Submission confirmation <span class="badge b-cust">Customer-facing</span></div>
+<div class="rd">Before creating the demand item, the agent must present a concise summary containing title, demand type, business area, objective, expected value, proposed timeline, known risks or constraints, and duplicate/related-demand outcome. The user must be able to edit incorrect fields or confirm submission.</div>
+<div class="re"><strong>Confirmation options:</strong> Confirm and submit; edit a field; add more detail; cancel; save as draft.</div>
+</div>
+
+<div class="mh"><strong>FR-010 — Demand record creation</strong><span>A confirmed submission creates a governed Demand Item record.</span></div>
+<div class="rb">
+<div class="rt">Record creation <span class="badge b-auto">Automatic</span></div>
+<div class="rd">Once the customer confirms the summary, the platform must create a Demand Item record in the data layer. The record must include the captured business fields, customer organisation, submitter ID, channel of submission, duplicate references, generated summary, raw conversation reference, status, and audit metadata.</div>
+<div class="re"><strong>Initial status:</strong> The internal status should be created as Submitted or equivalent configured backend status. The customer-facing status label must display as <strong>Submitted</strong>.</div>
+</div>
+
+<div class="mh"><strong>FR-011 — Customer acknowledgement and tracker visibility</strong><span>The customer immediately sees the submitted item.</span></div>
+<div class="rb">
+<div class="rt">Acknowledgement <span class="badge b-cust">Customer-facing</span></div>
+<div class="rd">After record creation, the agent must confirm successful submission and provide the customer with the demand reference ID, title, submitted date/time, current customer-facing status, and where to track it. In WebChat, a link to the demand tracker should be shown. In Teams, a card or message should provide the same safe summary and link if enabled.</div>
+<div class="re"><strong>Customer sees:</strong> Reference ID, title, status Submitted, high-level summary, and next-step expectation such as "NTT DATA will review this request." Customer must not see score, scoring breakdown, governance notes, CPQ fields, rates, margin, or capacity data.</div>
+</div>
+
+<div class="mh"><strong>FR-012 — Agent action logging</strong><span>Every material agent action must be auditable.</span></div>
+<div class="rb">
+<div class="rt">Audit and traceability <span class="badge b-sec">Governance</span></div>
+<div class="rd">The agent must write entries to the Agent Action Log for conversation start, identity resolution, demand type classification, questions asked, answers received, completeness checks, duplicate search execution, duplicate results shown, customer confirmation, record creation, and any error or fallback event.</div>
+<div class="ra"><strong>Audit behaviour:</strong> Logs must support traceability without exposing unnecessary customer-sensitive data to users who are not authorised to view it.</div>
+</div>
+
+<h2>8. Channel-specific Requirements</h2>
+<table>
+<tr><th>Area</th><th>Microsoft Teams</th><th>WebChat</th></tr>
+<tr><td>Entry point</td><td>User opens the Demand Intake Agent in Teams, through an approved app, chat, or channel experience.</td><td>User opens embedded chat from the customer portal or demand submission page.</td></tr>
+<tr><td>Authentication</td><td>Identity resolved through Teams/Microsoft identity context and platform provisioning.</td><td>Identity resolved through WebApp session and platform RBAC.</td></tr>
+<tr><td>Conversation UX</td><td>Conversational messages, adaptive cards where appropriate, quick reply buttons for options.</td><td>Conversational panel with structured cards, field summary, edit controls, and tracker link.</td></tr>
+<tr><td>Draft resume</td><td>Agent should support resume where user identity and conversation state can be linked.</td><td>Draft should be accessible from customer portal draft/intake-in-progress area where implemented.</td></tr>
+<tr><td>Submission confirmation</td><td>Teams confirmation card/message with demand reference and status.</td><td>WebChat confirmation with direct link to submitted demand tracker detail page.</td></tr>
+<tr><td>Attachments</td><td>Attachment support depends on approved Teams and platform file handling policy.</td><td>Attachment or link capture depends on WebApp upload controls and security policy.</td></tr>
+<tr><td>Error handling</td><td>Controlled Teams message with retry or support path.</td><td>Inline WebChat error message with retry and support path.</td></tr>
+</table>
+
+<h2>9. Data Requirements</h2>
+<table>
+<tr><th>Data object</th><th>Required fields for this story</th><th>Notes</th></tr>
+<tr><td><strong>Demand Item</strong></td><td>Demand ID, title, type, description, business area, objective, expected value, proposed timeline, status, customer-visible status label, submitter ID, customer organisation ID, source channel, duplicate references, created timestamp.</td><td>Core record created by this story.</td></tr>
+<tr><td><strong>Demand Intake Draft</strong></td><td>Draft ID, user ID, organisation ID, partial answers, missing fields, last updated timestamp, channel, expiry policy.</td><td>Required if the user cannot complete all mandatory information.</td></tr>
+<tr><td><strong>Duplicate Match Result</strong></td><td>Search ID, candidate demand ID, similarity score band, match type, customer-safe summary shown, user decision, timestamp.</td><td>Supports audit and governance review.</td></tr>
+<tr><td><strong>Agent Action Log</strong></td><td>Log ID, agent name, action type, input reference, output reference, timestamp, channel, user ID, confidence score where relevant, human confirmation status.</td><td>Mandatory audit trail.</td></tr>
+<tr><td><strong>Conversation Transcript Reference</strong></td><td>Conversation ID, channel, storage reference, retention category, related demand ID or draft ID.</td><td>Should store reference or governed transcript according to data policy.</td></tr>
+</table>
+
+<h2>10. Acceptance Criteria</h2>
+<table>
+<tr><th>#</th><th>Scenario</th><th>Given</th><th>When</th><th>Then</th></tr>
+<tr><td>AC-001</td><td>Start intake in Teams</td><td>An authorised customer user has access to the Teams Demand Intake Agent</td><td>The user starts a new demand conversation</td><td>The agent greets the user, resolves their identity and organisation context, and asks for the demand description.</td></tr>
+<tr><td>AC-002</td><td>Start intake in WebChat</td><td>An authorised customer user is logged into the WebApp</td><td>The user opens the Demand Intake WebChat</td><td>The agent starts the same intake flow using the WebApp session context.</td></tr>
+<tr><td>AC-003</td><td>Unauthorised user blocked</td><td>A user cannot be matched to an authorised customer organisation</td><td>The user attempts to submit demand</td><td>The agent prevents record creation and displays a controlled access message.</td></tr>
+<tr><td>AC-004</td><td>Demand type inferred</td><td>The user describes a new AI solution request</td><td>The agent processes the description</td><td>The agent proposes the demand type and asks relevant follow-up questions.</td></tr>
+<tr><td>AC-005</td><td>Capacity request flow</td><td>The user asks for additional delivery capacity</td><td>The agent classifies the request as capacity-related</td><td>The agent asks for role, skill, start date, duration, and location or shore preference.</td></tr>
+<tr><td>AC-006</td><td>Mandatory fields missing</td><td>The user has not provided business area or proposed timeline</td><td>The user tries to submit</td><td>The agent explains what is missing and asks focused follow-up questions before allowing submission.</td></tr>
+<tr><td>AC-007</td><td>Save incomplete draft</td><td>The user cannot provide all mandatory information</td><td>The user chooses to stop or save progress</td><td>The agent saves an incomplete draft where supported and does not create a Submitted demand item.</td></tr>
+<tr><td>AC-008</td><td>Semantic duplicate found</td><td>A similar demand item exists in the same customer organisation</td><td>The agent performs duplicate detection</td><td>The agent shows a customer-safe summary of the similar item and asks whether this is the same or distinct.</td></tr>
+<tr><td>AC-009</td><td>User confirms distinct demand</td><td>A possible duplicate has been shown</td><td>The user confirms the new request is distinct</td><td>The platform creates a new demand item with a duplicate or related-demand reference for governance review.</td></tr>
+<tr><td>AC-010</td><td>User confirms same demand</td><td>A high-confidence duplicate has been shown</td><td>The user confirms it is the same initiative</td><td>The platform does not create an unnecessary duplicate demand item and guides the user to the existing customer-visible item where permitted.</td></tr>
+<tr><td>AC-011</td><td>Final review required</td><td>The agent has collected all required information</td><td>The user reaches submission step</td><td>The agent displays a structured summary and requires explicit confirmation before creation.</td></tr>
+<tr><td>AC-012</td><td>Edit before submission</td><td>The final summary contains an incorrect field</td><td>The user chooses to edit</td><td>The agent updates the relevant field and redisplays the summary before confirmation.</td></tr>
+<tr><td>AC-013</td><td>Demand item created</td><td>The user confirms the final summary</td><td>The platform saves the demand item</td><td>A Demand Item record is created with status Submitted and the correct customer-visible status label.</td></tr>
+<tr><td>AC-014</td><td>Customer acknowledgement</td><td>A demand item has been created successfully</td><td>The agent responds to the user</td><td>The user receives a demand reference ID, title, status Submitted, and tracker guidance or link.</td></tr>
+<tr><td>AC-015</td><td>Customer visibility restriction</td><td>A demand item has been submitted</td><td>The customer views the item</td><td>The customer can see only customer-safe fields and cannot see internal score, scoring rationale, CPQ, rate, margin, or capacity information.</td></tr>
+<tr><td>AC-016</td><td>Agent action log written</td><td>The intake conversation has completed or failed</td><td>The platform records the process</td><td>Agent actions are logged with channel, user, action type, timestamp, and related demand or draft reference.</td></tr>
+<tr><td>AC-017</td><td>Channel consistency</td><td>The same demand information is provided via Teams and WebChat in separate tests</td><td>Each user confirms submission</td><td>The resulting Demand Item records follow the same schema and lifecycle rules regardless of channel.</td></tr>
+<tr><td>AC-018</td><td>Error handling</td><td>The demand creation API fails</td><td>The user confirms submission</td><td>The agent shows a controlled failure message, does not claim success, logs the error, and allows retry or support escalation.</td></tr>
+</table>
+
+<h2>11. Non-functional Requirements</h2>
+<table>
+<tr><th>Category</th><th>Requirement</th></tr>
+<tr><td>Security</td><td>All access must respect customer and NTT DATA role-based access controls. Customer users must only create and view demand within their authorised organisation scope.</td></tr>
+<tr><td>Privacy</td><td>Conversation transcripts, attachments, and extracted summaries must be handled according to approved data retention and privacy policies.</td></tr>
+<tr><td>Reliability</td><td>The agent must not create duplicate records due to retry, refresh, or repeated confirmation events. Record creation must be idempotent where technically feasible.</td></tr>
+<tr><td>Availability</td><td>The intake capability should remain available in at least one channel if the other channel is temporarily unavailable, subject to platform architecture.</td></tr>
+<tr><td>Performance</td><td>Common agent responses should feel interactive. Duplicate search and record creation should return clear progress messages if they take longer than expected.</td></tr>
+<tr><td>Explainability</td><td>The agent should explain why it is asking for key fields in plain language, especially value, timeline, and business area.</td></tr>
+<tr><td>Auditability</td><td>All material actions must be traceable through Agent Action Log and linked to the demand item or draft.</td></tr>
+<tr><td>Accessibility</td><td>WebChat must support keyboard navigation, readable contrast, and screen-reader-friendly labels where applicable.</td></tr>
+<tr><td>Branding</td><td>The WebChat and confirmation components should follow the AI Studio / NTT DATA Command Center visual language used by the platform.</td></tr>
+</table>
+
+<h2>12. Error and Edge Case Handling</h2>
+<table>
+<tr><th>Case</th><th>Expected handling</th></tr>
+<tr><td>User abandons conversation</td><td>Save as draft if enough context exists and draft capability is enabled; otherwise log abandoned session without creating a demand item.</td></tr>
+<tr><td>User provides vague request</td><td>Agent asks clarifying questions and may classify as exploratory or unknown until enough detail is gathered.</td></tr>
+<tr><td>User asks for unsupported action</td><td>Agent explains that it can help submit demand and redirects to supported intake path.</td></tr>
+<tr><td>User tries to view internal scoring or commercial detail</td><td>Agent refuses to expose internal information and provides customer-safe status information only.</td></tr>
+<tr><td>Duplicate search unavailable</td><td>Agent should not silently skip duplicate detection unless product rules permit. It should either retry, save draft, or create with a flag that duplicate check failed and needs governance review.</td></tr>
+<tr><td>Record creation fails</td><td>Agent must not claim the item was submitted. It should show retry/support guidance and log the failure.</td></tr>
+<tr><td>User changes channel mid-process</td><td>If conversation state is linked to the user and draft, the user should be able to resume. If not supported, agent should start a new intake and avoid exposing previous channel data unsafely.</td></tr>
+<tr><td>Multiple users submit similar demand</td><td>Semantic duplicate logic should surface possible matches and capture whether the request is same, related, or distinct.</td></tr>
+<tr><td>User enters sensitive or regulated data</td><td>Agent should capture a sensitivity flag and avoid unnecessary repetition of sensitive content in summaries.</td></tr>
+</table>
+
+<h2>13. Integration Requirements</h2>
+<table>
+<tr><th>Integration</th><th>Purpose</th><th>Requirement</th></tr>
+<tr><td>Azure AI Foundry</td><td>Agent hosting, orchestration, prompt/tool execution, model governance path.</td><td>Demand Intake Agent must be deployed as a governed Foundry-hosted agent or equivalent approved architecture.</td></tr>
+<tr><td>Microsoft Teams</td><td>Customer-facing conversational channel.</td><td>Agent must be accessible to approved customer users through Teams subject to tenant and access setup.</td></tr>
+<tr><td>WebApp WebChat</td><td>Embedded customer portal channel.</td><td>Agent must be embedded in the WebApp and use authenticated WebApp context.</td></tr>
+<tr><td>Platform API</td><td>Demand record creation and draft management.</td><td>Agent must create and update demand records through secure APIs, not by direct unauthorised database writes.</td></tr>
+<tr><td>Data layer / Fabric</td><td>Demand items, drafts, duplicate search index, agent action logs.</td><td>Created records and audit entries must persist to the approved data model.</td></tr>
+<tr><td>Semantic search / vector index</td><td>Duplicate and related-demand detection.</td><td>Agent must search existing demand records using semantic similarity and customer access boundaries.</td></tr>
+<tr><td>Notification service</td><td>Submission acknowledgement and future status updates.</td><td>Agent should trigger customer-safe acknowledgement and support tracker visibility after creation.</td></tr>
+</table>
+
+<h2>14. Sample Conversation</h2>
+<div class="rb">
+<div class="rt">Example — New AI use case</div>
+<pre>Customer: We want to build an AI tool for contract review.
+Agent: I can help capture that as a new AI Studio demand item. Is this a new AI use case, an enhancement to an existing solution, or a request for additional delivery capacity?
+Customer: New AI use case.
+Agent: Great. Which business area owns this request?
+Customer: Legal Operations.
+Agent: What problem are you trying to solve?
+Customer: Contract review takes too long and we want to identify risky clauses faster.
+Agent: What benefit are you expecting?
+Customer: Faster review times and fewer missed compliance issues.
+Agent: Is there a target timeline or business deadline?
+Customer: We would like a discovery to start in September.
+Agent: I found a similar request from another business unit in your organisation: "Automated legal document analysis" submitted three weeks ago. Is your request the same initiative or a separate but related request?
+Customer: Separate, but related.
+Agent: Thanks. Here is the demand summary I will submit...
+Customer: Confirm and submit.
+Agent: Submitted. Your demand reference is DEM-000123. Current status: Submitted. You can track it in your demand tracker.</pre>
+</div>
+
+<h2>15. Definition of Done</h2>
+<table>
+<tr><th>#</th><th>Criterion</th></tr>
+<tr><td>1</td><td>The Foundry-hosted Demand Intake Agent is available through Microsoft Teams and embedded WebChat.</td></tr>
+<tr><td>2</td><td>Authorised customer users can start a demand intake conversation from either channel.</td></tr>
+<tr><td>3</td><td>The agent resolves user identity and customer organisation context before creating a demand item.</td></tr>
+<tr><td>4</td><td>The agent captures demand type, description, business area, objective, expected value or benefit, and proposed timeline.</td></tr>
+<tr><td>5</td><td>The agent adapts its questions for AI use case, enhancement, capacity request, and unclear demand types.</td></tr>
+<tr><td>6</td><td>Mandatory field validation prevents incomplete demand items from being submitted.</td></tr>
+<tr><td>7</td><td>Incomplete intake can be saved as draft where supported and is not treated as submitted demand.</td></tr>
+<tr><td>8</td><td>Semantic duplicate detection runs before final submission and checks relevant demand records within the customer organisation boundary.</td></tr>
+<tr><td>9</td><td>The agent shows customer-safe duplicate or related-demand summaries and captures the user's decision.</td></tr>
+<tr><td>10</td><td>The customer reviews and explicitly confirms the final structured summary before record creation.</td></tr>
+<tr><td>11</td><td>A confirmed submission creates a Demand Item record with customer-visible status Submitted.</td></tr>
+<tr><td>12</td><td>The customer receives a demand reference and can see the submitted item in their demand tracker.</td></tr>
+<tr><td>13</td><td>Customer views do not expose internal score, scoring rationale, CPQ, rate card, margin, resource, or capacity data.</td></tr>
+<tr><td>14</td><td>Agent actions are written to the Agent Action Log with sufficient traceability for governance review.</td></tr>
+<tr><td>15</td><td>Failed duplicate search, failed record creation, access issues, and abandoned conversations are handled with controlled user messages and logs.</td></tr>
+<tr><td>16</td><td>Both channels create demand records using the same platform API and data schema.</td></tr>
+<tr><td>17</td><td>The created demand item can be picked up by the downstream Demand Scoring Agent or triage queue after submission.</td></tr>
+</table>
+
+<div class="footer">
+<span>NTT DATA — Internal Use Only &nbsp;|&nbsp; AI Studio Platform — Demand Intake User Story</span>
+<span>Version 1.0 &nbsp;|&nbsp; July 2026</span>
+</div>
+
+</div>
+</body>
+</html>
