@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NTT DATA — Business Process Management</title>
+<style>
+  :root{
+    --blue:#0f6fc5;
+    --blue-dark:#0a58a0;
+    --blue-bg:#eaf3fc;
+    --red:#dc2626;
+    --red-bg:#fde8e8;
+    --yellow:#b45309;
+    --yellow-bg:#fef3c7;
+    --green:#16a34a;
+    --green-bg:#dcfce7;
+    --purple:#7c3aed;
+    --purple-bg:#ede9fe;
+    --teal-bg:#e0f2f1;
+    --gray-text:#6b7280;
+    --gray-text-dark:#374151;
+    --border:#e5e7eb;
+    --bg:#f8fafc;
+    --card-shadow:0 1px 2px rgba(0,0,0,0.04);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1f2937;background:var(--bg);}
+  a{text-decoration:none;color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  ul{list-style:none;margin:0;padding:0;}
+
+  /* ---------- App switcher (utility, not part of original design) ---------- */
+  #app-switcher{
+    position:fixed;top:10px;right:10px;z-index:1000;
+    background:#1f2937;border-radius:999px;padding:4px;display:flex;gap:2px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+  }
+  #app-switcher button{
+    border:none;background:transparent;color:#cbd5e1;font-size:12px;font-weight:600;
+    padding:7px 14px;border-radius:999px;transition:all .15s;
+  }
+  #app-switcher button.active{background:var(--blue);color:#fff;}
+
+  /* ---------- Layout shells ---------- */
+  .app-shell{display:none;height:100vh;}
+  .app-shell.active{display:flex;}
+
+  /* ---------- Sidebar (BPM app) ---------- */
+  .sidebar{
+    width:270px;min-width:270px;background:#fff;border-right:1px solid var(--border);
+    display:flex;flex-direction:column;height:100%;
+  }
+  .sidebar-logo{padding:22px 24px 18px;border-bottom:none;}
+  .sidebar-logo img.logo-fallback{display:none;}
+  .logo-row{display:flex;align-items:center;gap:8px;font-weight:800;font-size:19px;color:var(--blue);letter-spacing:0.5px;}
+  .logo-ring{width:26px;height:26px;border-radius:50%;border:3px solid var(--blue);position:relative;flex:none;}
+  .logo-ring::after{content:"";position:absolute;top:3px;right:0;width:6px;height:6px;background:var(--blue);border-radius:1px;}
+  .nav-scroll{flex:1;padding:6px 12px;overflow-y:auto;}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:8px;
+    color:#374151;font-size:14.5px;font-weight:500;cursor:pointer;margin-bottom:2px;border-left:3px solid transparent;
+  }
+  .nav-item:hover{background:#f3f4f6;}
+  .nav-item.active{background:var(--blue-bg);color:var(--blue);border-left:3px solid var(--blue);font-weight:600;}
+  .nav-subitem{
+    padding:9px 14px 9px 34px;font-size:14px;color:#4b5563;border-radius:8px;cursor:pointer;margin-bottom:2px;
+  }
+  .nav-subitem:hover{background:#f3f4f6;}
+  .nav-subitem.active{background:var(--blue-bg);color:var(--blue);font-weight:600;}
+  .nav-group-title{padding:11px 14px;font-size:14.5px;font-weight:500;color:#374151;}
+  .sidebar-footer{
+    padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;
+  }
+  .avatar{
+    width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:flex;
+    align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;
+  }
+  .sidebar-footer .name{font-size:13.5px;font-weight:600;color:#1f2937;}
+  .sidebar-footer .email{font-size:12px;color:var(--gray-text);}
+
+  /* ---------- Main column ---------- */
+  .main-col{flex:1;display:flex;flex-direction:column;height:100%;overflow:hidden;}
+  .topbar{
+    background:#fff;border-bottom:1px solid var(--border);padding:16px 28px;
+    display:flex;align-items:center;gap:18px;flex:none;
+  }
+  .topbar h1{font-size:20px;font-weight:700;margin:0;color:#111827;white-space:nowrap;}
+  .topbar .subtitle{font-size:12.5px;color:var(--gray-text);margin-top:2px;}
+  .topbar-divider{width:1px;height:26px;background:var(--border);}
+  .dropdown-pill{
+    display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;
+    padding:9px 14px;font-size:13.5px;font-weight:500;color:#374151;white-space:nowrap;
+  }
+  .btn{
+    border-radius:8px;font-size:13.5px;font-weight:600;padding:9px 16px;border:1px solid var(--border);
+    display:inline-flex;align-items:center;gap:7px;white-space:nowrap;color:#374151;background:#fff;
+  }
+  .btn:hover{background:#f9fafb;}
+  .btn-primary{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .btn-primary:hover{background:var(--blue-dark);}
+  .search-box{
+    margin-left:auto;flex:1;max-width:340px;display:flex;align-items:center;gap:8px;
+    border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:var(--gray-text);font-size:13.5px;
+  }
+  .content{flex:1;overflow-y:auto;padding:26px 28px;}
+
+  .icon{width:16px;height:16px;flex:none;}
+  .icon-sm{width:14px;height:14px;flex:none;}
+
+  /* ---------- Stat cards ---------- */
+  .stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-bottom:22px;}
+  .stat-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--card-shadow);}
+  .stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+  .stat-num{font-size:26px;font-weight:700;color:#111827;line-height:1;}
+  .stat-label{font-size:13px;color:var(--gray-text);margin-top:8px;}
+
+  /* ---------- Needs attention panel ---------- */
+  .panel{background:#fff;border:1px solid var(--border);border-left:4px solid var(--red);border-radius:10px;box-shadow:var(--card-shadow);overflow:hidden;}
+  .panel-header{display:flex;align-items:center;gap:10px;padding:18px 22px;}
+  .panel-header h2{font-size:16px;margin:0;font-weight:700;}
+  .badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;}
+  .badge-red{background:var(--red-bg);color:var(--red);}
+  .attn-item{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 22px;border-top:1px solid var(--border);}
+  .attn-left{flex:1;}
+  .tag-pill{display:inline-block;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:6px;margin-bottom:8px;}
+  .tag-red{background:var(--red-bg);color:var(--red);}
+  .tag-yellow{background:var(--yellow-bg);color:var(--yellow);}
+  .attn-title{font-weight:700;font-size:14.5px;margin-right:8px;}
+  .attn-time{font-size:12.5px;color:#9ca3af;}
+  .attn-desc{font-size:13.5px;color:var(--gray-text);margin-top:4px;}
+
+  /* ---------- Table generic ---------- */
+  table{width:100%;border-collapse:collapse;}
+  .data-card{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--card-shadow);overflow:hidden;}
+  th{text-align:left;font-size:11.5px;color:var(--gray-text);text-transform:uppercase;font-weight:700;padding:14px 18px;border-bottom:1px solid var(--border);letter-spacing:0.3px;}
+  td{padding:16px 18px;border-bottom:1px solid var(--border);font-size:14px;color:#1f2937;vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .cell-title{font-weight:700;font-size:14.5px;color:#111827;}
+  .cell-sub{font-size:12px;color:#9ca3af;margin-top:2px;}
+  .pill{display:inline-block;font-size:12px;font-weight:600;padding:4px 12px;border-radius:6px;border:1px solid var(--border);color:#374151;}
+  .pill-gray{background:#f9fafb;color:#374151;border-color:var(--border);}
+  .pill-yellow{background:var(--yellow-bg);color:var(--yellow);border-color:transparent;}
+  .pill-green{background:var(--green-bg);color:var(--green);border-color:transparent;}
+  .pill-blue-outline{background:#fff;color:var(--blue);border-color:var(--blue);}
+  .kebab{color:#9ca3af;font-size:18px;font-weight:700;cursor:pointer;}
+
+  /* ---------- Filters row (Business Processes / Drafts search) ---------- */
+  .search-full{
+    display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;
+    padding:12px 16px;color:#9ca3af;font-size:14px;background:#fff;margin-bottom:16px;
+  }
+  .filters-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+  .filters-label{font-size:13.5px;color:var(--gray-text);display:flex;align-items:center;gap:6px;font-weight:500;}
+  .result-count{font-size:13.5px;color:var(--gray-text);margin-bottom:14px;}
+  .result-count b{color:#1f2937;}
+
+  /* ---------- New Assessment (chat) page ---------- */
+  .chat-shell{display:flex;height:100%;gap:0;}
+  .session-panel{width:290px;min-width:290px;border-right:1px solid var(--border);background:#fff;display:flex;flex-direction:column;padding:18px;}
+  .session-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .session-panel-header h3{font-size:14.5px;margin:0;font-weight:700;display:flex;align-items:center;gap:8px;}
+  .session-item{padding:12px 4px;border-bottom:1px solid #f1f5f9;}
+  .session-item .stitle{font-size:13.5px;font-weight:600;color:#1f2937;}
+  .session-item .stime{font-size:12px;color:#9ca3af;margin-top:3px;}
+  .chat-main{flex:1;display:flex;flex-direction:column;background:var(--bg);}
+  .chat-header{background:#fff;border-bottom:1px solid var(--border);padding:16px 26px;display:flex;align-items:center;justify-content:space-between;}
+  .chat-header-left{display:flex;align-items:center;gap:12px;}
+  .assistant-icon{width:38px;height:38px;border-radius:9px;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;}
+  .chat-header h3{margin:0;font-size:15px;font-weight:700;}
+  .chat-header .desc{font-size:12.5px;color:var(--gray-text);}
+  .chat-body{flex:1;overflow-y:auto;padding:24px 26px;}
+  .msg-row{display:flex;gap:12px;max-width:760px;}
+  .bubble{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.7;color:#1f2937;box-shadow:var(--card-shadow);}
+  .bubble ul{margin:8px 0;padding-left:2px;}
+  .bubble li{margin-bottom:6px;}
+  .bubble-time{font-size:11.5px;color:#9ca3af;margin-top:6px;}
+  .suggest-card{
+    display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:10px;
+    padding:14px 18px;font-size:14px;font-weight:500;color:#1f2937;margin-top:12px;max-width:760px;margin-left:50px;
+  }
+  .suggest-card:hover{border-color:var(--blue);}
+  .chat-input-bar{background:#fff;border-top:1px solid var(--border);padding:16px 26px;}
+  .input-row{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
+  .input-row input{border:none;outline:none;flex:1;font-size:14px;font-family:inherit;}
+  .send-btn{width:34px;height:34px;border-radius:8px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;color:#9ca3af;flex:none;}
+  .input-hint{font-size:11.5px;color:#9ca3af;margin-top:8px;padding-left:2px;}
+  kbd{background:#f3f4f6;border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:11px;font-family:inherit;}
+
+  /* ============ Heatmap App ============ */
+  #heatmap-app{flex-direction:column;background:var(--bg);}
+  .hm-topbar{
+    background:#fff;border-bottom:1px solid var(--border);padding:14px 26px;display:flex;align-items:center;gap:16px;
+  }
+  .hm-topbar h1{font-size:18px;font-weight:700;margin:0;white-space:nowrap;}
+  .hm-body{display:flex;flex:1;overflow:hidden;}
+  .hm-filters{width:250px;min-width:250px;background:#fff;border-right:1px solid var(--border);padding:18px 16px;overflow-y:auto;}
+  .hm-filters-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .hm-filters-head h3{font-size:15px;margin:0;font-weight:700;}
+  .clear-all{font-size:12.5px;color:var(--blue);font-weight:600;}
+  .f-group{margin-bottom:14px;}
+  .f-label{font-size:12.5px;font-weight:600;color:#374151;margin-bottom:6px;}
+  .f-select{
+    width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:12.5px;color:#374151;
+    display:flex;align-items:center;justify-content:space-between;background:#fff;
+  }
+  .f-section-title{
+    font-size:12.5px;font-weight:700;color:#111827;padding:10px 0;border-top:1px solid #f1f5f9;margin-top:6px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .hm-filter-actions{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+  .hm-main{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:18px;}
+  .hm-kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;}
+  .hm-kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;box-shadow:var(--card-shadow);}
+  .hm-kpi-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+  .hm-kpi-num{font-size:20px;font-weight:700;color:#111827;}
+  .hm-kpi-label{font-size:12px;color:var(--gray-text);margin-top:4px;}
+  .hm-kpi-delta{font-size:11.5px;color:var(--green);margin-top:6px;}
+
+  .hm-card{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--card-shadow);padding:18px 20px;}
+  .hm-card-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+  .hm-card-head h3{font-size:15px;margin:0;font-weight:700;flex:1;}
+  .legend{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--gray-text);}
+  .legend-bar{width:90px;height:10px;border-radius:5px;background:linear-gradient(90deg,#fde68a,#f97316,#dc2626);}
+  .checkbox-lbl{font-size:12.5px;color:#374151;display:flex;align-items:center;gap:6px;}
+
+  .hm-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .hm-table th{background:#f9fafb;font-size:11px;text-transform:none;padding:10px 12px;text-align:center;border:1px solid var(--border);color:#374151;font-weight:700;}
+  .hm-table th:first-child{text-align:left;}
+  .hm-table td{padding:10px 12px;text-align:center;border:1px solid var(--border);font-weight:600;}
+  .hm-table td:first-child{text-align:left;font-weight:600;}
+  .hm-cell-count{font-size:13.5px;font-weight:700;}
+  .hm-cell-val{font-size:10.5px;font-weight:500;opacity:0.85;display:block;}
+  .row-region td:first-child{font-weight:700;}
+  .row-total td{background:#f3f4f6 !important;color:#111827;font-weight:700;}
+  .caret{display:inline-block;margin-right:4px;color:#6b7280;font-size:10px;}
+
+  .demand-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .demand-head h3{font-size:15px;margin:0;font-weight:700;}
+  .est-badge{background:var(--blue-bg);color:var(--blue);font-size:12px;font-weight:700;padding:5px 12px;border-radius:6px;}
+  .demand-search{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12.5px;color:#9ca3af;min-width:220px;}
+  .icon-btn{border:1px solid var(--border);border-radius:8px;padding:8px 10px;background:#fff;display:flex;align-items:center;gap:6px;font-size:12.5px;color:#374151;}
+
+  .priority-high{background:var(--red-bg);color:var(--red);}
+  .priority-medium{background:var(--yellow-bg);color:var(--yellow);}
+  .priority-low{background:var(--green-bg);color:var(--green);}
+  .link-blue{color:var(--blue);font-weight:700;}
+  .qw-yes{color:var(--green);font-weight:700;}
+  .qw-no{color:#9ca3af;font-weight:700;}
+  .status-review{background:var(--blue-bg);color:var(--blue);}
+  .status-submitted{background:#f3f4f6;color:#374151;}
+  .status-info{background:var(--purple-bg);color:var(--purple);}
+  .status-draft{background:#f3f4f6;color:#6b7280;}
+
+  .pagination{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-size:12.5px;color:var(--gray-text);}
+  .pg-btns{display:flex;align-items:center;gap:6px;}
+  .pg-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#374151;font-size:12.5px;}
+  .pg-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+  /* Right details panel */
+  .hm-detail{width:340px;min-width:340px;background:#fff;border-left:1px solid var(--border);padding:20px;overflow-y:auto;}
+  .hm-detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .hm-detail-head h4{font-size:14px;margin:0;font-weight:700;color:var(--gray-text);}
+  .close-x{color:#9ca3af;font-size:18px;cursor:pointer;}
+  .dm-id-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .dm-id-row .dm-id{font-weight:700;font-size:13.5px;}
+  .dm-title{font-size:17px;font-weight:700;margin:6px 0 8px;line-height:1.3;}
+  .dm-tags{font-size:12.5px;color:var(--gray-text);margin-bottom:12px;}
+  .dm-tags span{margin-right:6px;}
+  .status-tabs{display:flex;gap:8px;margin-bottom:16px;}
+  .status-tab{font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;}
+  .metric-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;}
+  .metric-box{background:#f9fafb;border-radius:8px;padding:10px;}
+  .metric-label{font-size:10.5px;color:var(--gray-text);margin-bottom:4px;}
+  .metric-val{font-size:13.5px;font-weight:700;}
+  .val-high{color:var(--green);}
+  .val-medium{color:var(--yellow);}
+  .val-yes{color:var(--green);}
+  .detail-section{margin-bottom:16px;}
+  .detail-section h5{font-size:12.5px;font-weight:700;color:#111827;margin:0 0 8px;}
+  .detail-section p{font-size:12.5px;color:#4b5563;line-height:1.6;margin:0;}
+  .chip{display:inline-block;font-size:11.5px;background:var(--blue-bg);color:var(--blue);padding:4px 10px;border-radius:6px;margin:0 6px 6px 0;font-weight:600;}
+  .skills-table{width:100%;border-collapse:collapse;font-size:11px;}
+  .skills-table th{background:#f9fafb;padding:6px 8px;text-align:left;font-weight:700;color:#6b7280;border-bottom:1px solid var(--border);}
+  .skills-table td{padding:7px 8px;border-bottom:1px solid #f1f5f9;color:#374151;}
+  .add-info-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;color:#4b5563;}
+  .add-info-row b{color:#111827;font-weight:600;}
+  .view-full-btn{width:100%;margin-top:10px;justify-content:center;color:var(--blue);border-color:var(--blue);}
+</style>
+</head>
+<body>
+
+<div id="app-switcher">
+  <button class="active" onclick="switchApp('bpm')">BPM Dashboard</button>
+  <button onclick="switchApp('heatmap')">Demand Heatmap</button>
+</div>
+
+<!-- ================= BPM APP ================= -->
+<div class="app-shell active" id="bpm-app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-row"><span class="logo-ring"></span>NTT DATA</div>
+    </div>
+    <div class="nav-scroll">
+      <div class="nav-item" data-page="home" onclick="showPage('home')">Home</div>
+      <div class="nav-item" data-page="processes" onclick="showPage('processes')" style="font-weight:500;">Business Processes</div>
+      <div class="nav-subitem" data-page="new-assessment" onclick="showPage('new-assessment')">New Assessment</div>
+      <div class="nav-subitem" data-page="drafts" onclick="showPage('drafts')">Drafts</div>
+      <div class="nav-item">Approvals</div>
+      <div class="nav-item">Process Library</div>
+      <div class="nav-item">Settings</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="avatar">AO</div>
+      <div>
+        <div class="name">Admin Operator</div>
+        <div class="email">admin@ntt.com</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-col">
+    <!-- Shared topbar (content varies by page) -->
+    <div class="topbar" id="bpm-topbar">
+      <h1 id="page-title">Dashboard</h1>
+      <div class="dropdown-pill">▦ Operations ▾</div>
+      <button class="btn btn-primary" id="topbar-new-btn">+ New Assessment</button>
+      <div class="search-box">🔍 Search processes, approvals...</div>
+    </div>
+
+    <div class="content" id="content-area">
+
+      <!-- ===== PAGE: HOME ===== -->
+      <div class="page" id="page-home">
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--yellow-bg);">🕐</div>
+            <div class="stat-num">7</div>
+            <div class="stat-label">Open Approvals</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--blue-bg);">📄</div>
+            <div class="stat-num">12</div>
+            <div class="stat-label">Draft Processes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--purple-bg);">ⓘ</div>
+            <div class="stat-num">5</div>
+            <div class="stat-label">Awaiting Review</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--green-bg);">✓</div>
+            <div class="stat-num">18</div>
+            <div class="stat-label">Approved</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--teal-bg);">🗄</div>
+            <div class="stat-num">156</div>
+            <div class="stat-label">Added to Library</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span style="color:var(--red);font-size:17px;">⚠</span>
+            <h2>Needs Attention</h2>
+            <span class="badge badge-red">4 items</span>
+          </div>
+
+          <div class="attn-item">
+            <div class="attn-left">
+              <div><span class="tag-pill tag-red">Missing Information</span></div>
+              <span class="attn-title">Customer Onboarding</span><span class="attn-time">3h ago</span>
+              <div class="attn-desc">Missing integration details for Salesforce connector</div>
+            </div>
+            <button class="btn">Update Details</button>
+          </div>
+
+          <div class="attn-item">
+            <div class="attn-left">
+              <div><span class="tag-pill tag-yellow">Confidence Gap</span></div>
+              <span class="attn-title">Invoice Processing</span><span class="attn-time">5h ago</span>
+              <div class="attn-desc">Unable to map approval routing for Finance team escalation path</div>
+            </div>
+            <button class="btn">Review Extraction</button>
+          </div>
+
+          <div class="attn-item">
+            <div class="attn-left">
+              <div><span class="tag-pill tag-red">Returned for Changes</span></div>
+              <span class="attn-title">IT Asset Provisioning</span><span class="attn-time">1d ago</span>
+              <div class="attn-desc">Compliance team requested additional security checkpoints</div>
+            </div>
+            <button class="btn">Review Comments</button>
+          </div>
+
+          <div class="attn-item">
+            <div class="attn-left">
+              <div><span class="tag-pill tag-red">Overdue Approval</span></div>
+              <span class="attn-title">Marketing Campaign Process</span><span class="attn-time">5d ago</span>
+              <div class="attn-desc">Pending approval from Marketing Director for 5 days</div>
+            </div>
+            <button class="btn">Review Approval</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PAGE: BUSINESS PROCESSES ===== -->
+      <div class="page" id="page-processes" style="display:none;">
+        <div class="search-full">🔍 Search processes by name or ID...</div>
+        <div class="filters-row">
+          <span class="filters-label">▼ Filters:</span>
+          <div class="dropdown-pill">Domain ▾</div>
+          <div class="dropdown-pill">Approval Status ▾</div>
+          <div class="dropdown-pill">Owner ▾</div>
+          <div class="dropdown-pill">Library Status ▾</div>
+          <div class="dropdown-pill">Last Modified ▾</div>
+        </div>
+        <div class="result-count">Showing <b>9</b> processes</div>
+        <div class="data-card">
+          <table>
+            <thead>
+              <tr>
+                <th>Process Name</th><th>Domain</th><th>Current Stage</th><th>Approval Status</th>
+                <th>Library</th><th>Last Updated</th><th>Owner</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="cell-title">Customer Onboarding</div><div class="cell-sub">WF-1001</div></td>
+                <td><span class="pill pill-gray">Sales</span></td><td>As-Is Review</td>
+                <td><span class="pill pill-gray">Draft</span></td><td>—</td>
+                <td>2 hours ago</td><td>Sarah Chen</td><td class="kebab">⋮</td>
+              </tr>
+              <tr>
+                <td><div class="cell-title">Invoice Processing</div><div class="cell-sub">WF-1002</div></td>
+                <td><span class="pill pill-gray">Finance</span></td><td>To-Be Optimization</td>
+                <td><span class="pill pill-yellow">Awaiting Approval</span></td><td>—</td>
+                <td>5 hours ago</td><td>Michael Torres</td><td class="kebab">⋮</td>
+              </tr>
+              <tr>
+                <td><div class="cell-title">Support Ticket Routing</div><div class="cell-sub">WF-1003</div></td>
+                <td><span class="pill pill-gray">Operations</span></td><td>Completed</td>
+                <td><span class="pill pill-green">Approved</span></td>
+                <td><span class="pill pill-blue-outline">In Library</span></td>
+                <td>1 day ago</td><td>Jennifer Lee</td><td class="kebab">⋮</td>
+              </tr>
+              <tr>
+                <td><div class="cell-title">Employee Offboarding</div><div class="cell-sub">WF-1004</div></td>
+                <td><span class="pill pill-gray">HR</span></td><td>Discovery</td>
+                <td><span class="pill pill-gray">Draft</span></td><td>—</td>
+                <td>2 days ago</td><td>David Kumar</td><td class="kebab">⋮</td>
+              </tr>
+              <tr>
+                <td><div class="cell-title">Purchase Order Approval</div><div class="cell-sub">WF-1005</div></td>
+                <td><span class="pill pill-gray">Procurement</span></td><td>To-Be Optimization</td>
+                <td><span class="pill pill-yellow">Awaiting Approval</span></td><td>—</td>
+                <td>3 days ago</td><td>Emily Zhang</td><td class="kebab">⋮</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== PAGE: DRAFTS ===== -->
+      <div class="page" id="page-drafts" style="display:none;">
+        <div class="search-full">🔍 Search drafts by name or ID...</div>
+        <div class="data-card">
+          <table>
+            <thead>
+              <tr><th>Draft Name</th><th>Domain</th><th>Stage</th><th>Owner</th><th>Updated</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="cell-title">Customer Onboarding</div><div class="cell-sub">DF-2001</div></td>
+                <td><span class="pill pill-gray">Sales</span></td><td>As-Is Review</td>
+                <td>Sarah Chen</td><td>2 hours ago</td><td class="kebab">⋮</td>
+              </tr>
+              <tr>
+                <td><div class="cell-title">Expense Approval</div><div class="cell-sub">DF-2002</div></td>
+                <td><span class="pill pill-gray">Finance</span></td><td>Draft</td>
+                <td>Michael Torres</td><td>5 hours ago</td><td class="kebab">⋮</td>
+              </tr>
+              <tr>
+                <td><div class="cell-title">IT Asset Provisioning</div><div class="cell-sub">DF-2003</div></td>
+                <td><span class="pill pill-gray">IT</span></td><td>Discovery</td>
+                <td>Rachel Kim</td><td>1 day ago</td><td class="kebab">⋮</td>
+              </tr>
+              <tr>
+                <td><div class="cell-title">Employee Onboarding</div><div class="cell-sub">DF-2004</div></td>
+                <td><span class="pill pill-gray">HR</span></td><td>Draft</td>
+                <td>David Kumar</td><td>2 days ago</td><td class="kebab">⋮</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== PAGE: NEW ASSESSMENT (chat) ===== -->
+      <div class="page" id="page-new-assessment" style="display:none;padding:0;height:100%;">
+        <div class="chat-shell">
+          <div class="session-panel">
+            <button class="btn btn-primary" style="justify-content:center;margin-bottom:16px;">+ New Session</button>
+            <div style="font-size:12.5px;color:var(--gray-text);font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:6px;">🕐 Session Log</div>
+            <div style="flex:1;overflow-y:auto;">
+              <div class="session-item"><div class="stitle">Customer onboarding workflow</div><div class="stime">2h ago</div></div>
+              <div class="session-item"><div class="stitle">Expense approval — APAC</div><div class="stime">3h ago</div></div>
+              <div class="session-item"><div class="stitle">Vendor onboarding transcript</div><div class="stime">Yesterday</div></div>
+              <div class="session-item"><div class="stitle">IT access provisioning</div><div class="stime">Yesterday</div></div>
+              <div class="session-item"><div class="stitle">Procurement intake redesign</div><div class="stime">2 days ago</div></div>
+              <div class="session-item"><div class="stitle">Workshop: claims handling</div><div class="stime">3 days ago</div></div>
+            </div>
+            <button class="btn" style="justify-content:center;margin-top:10px;">🗑 Clear log</button>
+          </div>
+
+          <div class="chat-main">
+            <div class="chat-header">
+              <div class="chat-header-left">
+                <div class="assistant-icon">✦</div>
+                <div>
+                  <h3>Process Assistant</h3>
+                  <div class="desc">Describe a workflow or paste a workshop transcript — I'll build the assessment</div>
+                </div>
+              </div>
+              <button class="btn btn-primary">✎ Generate Draft</button>
+            </div>
+
+            <div class="chat-body">
+              <div class="msg-row">
+                <div class="bubble">
+                  👋 Hi! I'm your <b>Process Assistant</b>. Describe a workflow in plain English and I'll build the assessment for you — no forms required.
+                  <br><br>You can:
+                  <ul>
+                    <li><b>Describe a process</b> — just tell me what your team does and I'll draft the steps, owners and integrations</li>
+                    <li><b>Paste a workshop transcript</b> — drop in notes from a customer workshop and I'll extract the workflow</li>
+                    <li><b>Refine together</b> — ask me to add approvers, systems, or change any step</li>
+                  </ul>
+                  When it looks right, say "generate the draft" and I'll open it in the Workflow Studio.
+                  <div class="bubble-time">09:23 pm</div>
+                </div>
+              </div>
+              <div class="suggest-card">📋 Add a workshop transcript</div>
+              <div class="suggest-card">👥 Help me draft a customer onboarding process</div>
+            </div>
+
+            <div class="chat-input-bar">
+              <div class="input-row">
+                <span>📎</span>
+                <input type="text" placeholder="Describe the process, or paste a few lines of a transcript...">
+                <div class="send-btn">➤</div>
+              </div>
+              <div class="input-hint">Press <kbd>Enter</kbd> to send · Shift + Enter for new line · Say "generate the draft" when ready</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================= HEATMAP APP ================= -->
+<div class="app-shell" id="heatmap-app">
+  <div class="hm-topbar">
+    <div class="logo-row" style="font-size:16px;"><span class="logo-ring" style="width:20px;height:20px;"></span>NTT DATA</div>
+    <div class="topbar-divider"></div>
+    <h1>Demand Prioritisation Heatmap</h1>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+      <button class="btn">☆ Saved Views</button>
+      <button class="btn" style="padding:9px 11px;">⟳</button>
+      <button class="btn">⭳ Export</button>
+      <div style="display:flex;align-items:center;gap:8px;padding-left:8px;border-left:1px solid var(--border);">
+        <div class="avatar" style="background:var(--blue);">AM</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;">Alex Morgan</div>
+          <div style="font-size:11.5px;color:var(--gray-text);">Portfolio Manager ▾</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hm-body">
+    <!-- Filters sidebar -->
+    <div class="hm-filters">
+      <div class="hm-filters-head"><h3>Filters</h3><span class="clear-all">Clear All</span></div>
+
+      <div class="f-group"><div class="f-label">Date Range</div><div class="f-select">01 Apr 2024 - 30 Jun 2024 📅</div></div>
+      <div class="f-group"><div class="f-label">Customer Account</div><div class="f-select">All ▾</div></div>
+      <div class="f-group"><div class="f-label">Account Tier</div><div class="f-select">All ▾</div></div>
+
+      <div class="f-section-title">Geography ⌃</div>
+      <div class="f-group"><div class="f-label">Region</div><div class="f-select">All ▾</div></div>
+      <div class="f-group"><div class="f-label">Country</div><div class="f-select">All ▾</div></div>
+
+      <div class="f-section-title">Domain / Solution ⌃</div>
+      <div class="f-group"><div class="f-label">Domain</div><div class="f-select">All ▾</div></div>
+      <div class="f-group"><div class="f-label">Solution Area</div><div class="f-select">All ▾</div></div>
+
+      <div class="f-section-title">Opportunity ⌃</div>
+      <div class="f-group"><div class="f-label">Opportunity Type</div><div class="f-select">All ▾</div></div>
+      <div class="f-group"><div class="f-label">Priority</div><div class="f-select">All ▾</div></div>
+      <div class="f-group"><div class="f-label">Quick Win</div><div class="f-select">All ▾</div></div>
+
+      <div class="f-section-title">Value &amp; Scoring ⌃</div>
+      <div class="f-group"><div class="f-label">Est. Annual Value</div><div class="f-select">All ▾</div></div>
+      <div class="f-group"><div class="f-label">Priority Score</div><div class="f-select">All ▾</div></div>
+
+      <div class="f-section-title">Status ⌃</div>
+      <div class="f-group"><div class="f-label">Demand Status</div><div class="f-select">All ▾</div></div>
+
+      <div class="hm-filter-actions">
+        <button class="btn btn-primary" style="justify-content:center;">Apply Filters</button>
+        <button class="btn" style="justify-content:center;">Save View</button>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="hm-main">
+      <div class="hm-kpi-row">
+        <div class="hm-kpi">
+          <div class="hm-kpi-icon" style="background:var(--yellow-bg);">🕐</div>
+          <div class="hm-kpi-num">387</div><div class="hm-kpi-label">Total Demands</div>
+          <div class="hm-kpi-delta">↑ 18% vs prior period</div>
+        </div>
+        <div class="hm-kpi">
+          <div class="hm-kpi-icon" style="background:var(--green-bg);">£</div>
+          <div class="hm-kpi-num">£98.7M</div><div class="hm-kpi-label">Est. Annual Value</div>
+          <div class="hm-kpi-delta">↑ 22% vs prior period</div>
+        </div>
+        <div class="hm-kpi">
+          <div class="hm-kpi-icon" style="background:var(--purple-bg);">🔒</div>
+          <div class="hm-kpi-num">74</div><div class="hm-kpi-label">Avg. Priority Score</div>
+          <div class="hm-kpi-delta">↑ 5 vs prior period</div>
+        </div>
+        <div class="hm-kpi">
+          <div class="hm-kpi-icon" style="background:var(--red-bg);">⚑</div>
+          <div class="hm-kpi-num">142 (37%)</div><div class="hm-kpi-label">High Priority Demands</div>
+          <div class="hm-kpi-delta">↑ 12% vs prior period</div>
+        </div>
+        <div class="hm-kpi">
+          <div class="hm-kpi-icon" style="background:var(--yellow-bg);">⚡</div>
+          <div class="hm-kpi-num">96 (25%)</div><div class="hm-kpi-label">Quick Wins</div>
+          <div class="hm-kpi-delta">↑ 8% vs prior period</div>
+        </div>
+        <div class="hm-kpi">
+          <div class="hm-kpi-icon" style="background:var(--blue-bg);">🎯</div>
+          <div class="hm-kpi-num">41 (11%)</div><div class="hm-kpi-label">Strategic Bets</div>
+          <div class="hm-kpi-delta">↑ 4% vs prior period</div>
+        </div>
+      </div>
+
+      <div class="hm-card">
+        <div class="hm-card-head">
+          <h3>Portfolio Heatmap (Count of Demands) ⓘ</h3>
+          <div class="dropdown-pill" style="padding:6px 10px;font-size:12.5px;">View by: Domain ▾</div>
+          <div class="dropdown-pill" style="padding:6px 10px;font-size:12.5px;">Color by: Avg. Priority Score ▾</div>
+          <div class="legend">Low <span class="legend-bar"></span> High</div>
+          <label class="checkbox-lbl"><input type="checkbox" checked> Show values</label>
+        </div>
+
+        <table class="hm-table">
+          <thead>
+            <tr><th>Region / Country</th><th>Finance</th><th>HR</th><th>Operations</th><th>Legal</th><th>Customer Experience</th><th>Supply Chain</th><th>Technology</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            <tr class="row-region">
+              <td><span class="caret">⌄</span>Europe</td>
+              <td style="background:#f97316;color:#fff;">28<span class="hm-cell-val">£6.2M</span></td>
+              <td style="background:#fdba74;">16<span class="hm-cell-val">£2.1M</span></td>
+              <td style="background:#ea580c;color:#fff;">34<span class="hm-cell-val">£7.8M</span></td>
+              <td style="background:#fdba74;">22<span class="hm-cell-val">£4.3M</span></td>
+              <td style="background:#fed7aa;">18<span class="hm-cell-val">£3.2M</span></td>
+              <td style="background:#fed7aa;">15<span class="hm-cell-val">£2.6M</span></td>
+              <td style="background:#fdba74;">27<span class="hm-cell-val">£5.1M</span></td>
+              <td>160<span class="hm-cell-val">£31.3M</span></td>
+            </tr>
+            <tr>
+              <td style="padding-left:28px;">United Kingdom</td>
+              <td style="background:#fed7aa;">12<span class="hm-cell-val">£2.8M</span></td>
+              <td style="background:#fef3c7;">6<span class="hm-cell-val">£0.9M</span></td>
+              <td style="background:#fdba74;">14<span class="hm-cell-val">£3.1M</span></td>
+              <td style="background:#fef3c7;">9<span class="hm-cell-val">£1.7M</span></td>
+              <td style="background:#fef3c7;">8<span class="hm-cell-val">£1.2M</span></td>
+              <td style="background:#fef9c3;">5<span class="hm-cell-val">£0.8M</span></td>
+              <td style="background:#fef3c7;">11<span class="hm-cell-val">£2.1M</span></td>
+              <td>65<span class="hm-cell-val">£11.6M</span></td>
+            </tr>
+            <tr>
+              <td style="padding-left:28px;">Germany</td>
+              <td style="background:#fef3c7;">9<span class="hm-cell-val">£1.9M</span></td>
+              <td style="background:#fef9c3;">5<span class="hm-cell-val">£0.7M</span></td>
+              <td style="background:#fed7aa;">10<span class="hm-cell-val">£2.3M</span></td>
+              <td style="background:#fef3c7;">6<span class="hm-cell-val">£1.1M</span></td>
+              <td style="background:#fef9c3;">5<span class="hm-cell-val">£0.9M</span></td>
+              <td style="background:#fef9c3;color:#365314;">7<span class="hm-cell-val">£0.7M</span></td>
+              <td style="background:#fef3c7;">8<span class="hm-cell-val">£1.6M</span></td>
+              <td>48<span class="hm-cell-val">£7.2M</span></td>
+            </tr>
+            <tr>
+              <td style="padding-left:28px;">France</td>
+              <td style="background:#fef9c3;">7<span class="hm-cell-val">£1.5M</span></td>
+              <td style="background:#fef9c3;">5<span class="hm-cell-val">£0.5M</span></td>
+              <td style="background:#fef3c7;">10<span class="hm-cell-val">£2.4M</span></td>
+              <td style="background:#fef9c3;">7<span class="hm-cell-val">£1.5M</span></td>
+              <td style="background:#fef9c3;">5<span class="hm-cell-val">£1.1M</span></td>
+              <td style="background:#fef9c3;">5<span class="hm-cell-val">£1.1M</span></td>
+              <td style="background:#fef9c3;">8<span class="hm-cell-val">£1.4M</span></td>
+              <td>47<span class="hm-cell-val">£8.0M</span></td>
+            </tr>
+            <tr class="row-region">
+              <td><span class="caret">›</span>Asia Pacific</td>
+              <td style="background:#ea580c;color:#fff;">22<span class="hm-cell-val">£5.0M</span></td>
+              <td style="background:#fdba74;">14<span class="hm-cell-val">£1.7M</span></td>
+              <td style="background:#f97316;color:#fff;">26<span class="hm-cell-val">£6.2M</span></td>
+              <td style="background:#fdba74;">18<span class="hm-cell-val">£3.0M</span></td>
+              <td style="background:#fed7aa;">16<span class="hm-cell-val">£2.8M</span></td>
+              <td style="background:#fed7aa;">14<span class="hm-cell-val">£2.4M</span></td>
+              <td style="background:#fdba74;">20<span class="hm-cell-val">£4.0M</span></td>
+              <td>130<span class="hm-cell-val">£25.1M</span></td>
+            </tr>
+            <tr class="row-region">
+              <td><span class="caret">›</span>Americas</td>
+              <td style="background:#fdba74;">20<span class="hm-cell-val">£4.8M</span></td>
+              <td style="background:#fed7aa;">12<span class="hm-cell-val">£1.6M</span></td>
+              <td style="background:#ea580c;color:#fff;">24<span class="hm-cell-val">£6.0M</span></td>
+              <td style="background:#fed7aa;">16<span class="hm-cell-val">£2.8M</span></td>
+              <td style="background:#fed7aa;">14<span class="hm-cell-val">£2.3M</span></td>
+              <td style="background:#fef3c7;">12<span class="hm-cell-val">£2.1M</span></td>
+              <td style="background:#fed7aa;">19<span class="hm-cell-val">£3.6M</span></td>
+              <td>117<span class="hm-cell-val">£23.2M</span></td>
+            </tr>
+            <tr class="row-total">
+              <td>Grand Total</td>
+              <td>70<span class="hm-cell-val">£16.0M</span></td>
+              <td>42<span class="hm-cell-val">£5.4M</span></td>
+              <td>84<span class="hm-cell-val">£20.0M</span></td>
+              <td>56<span class="hm-cell-val">£10.1M</span></td>
+              <td>48<span class="hm-cell-val">£8.3M</span></td>
+              <td>41<span class="hm-cell-val">£7.1M</span></td>
+              <td>66<span class="hm-cell-val">£12.7M</span></td>
+              <td>387<span class="hm-cell-val">£98.7M</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="font-size:12px;color:var(--gray-text);margin-top:10px;">Click on any cell to view demands. Drill down by region, country, domain, or account using filters.</div>
+      </div>
+
+      <div class="hm-card">
+        <div class="demand-head">
+          <h3>Demands in Legal / United Kingdom / High Priority (9)</h3>
+          <span class="est-badge">Est. Annual Value: £1.7M</span>
+          <div class="demand-search">🔍 Search demands...</div>
+          <button class="icon-btn">▤ Columns</button>
+          <button class="icon-btn">▼</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Priority</th><th>Demand ID</th><th>Demand Title</th><th>Customer Account</th>
+              <th>Est. Annual Value</th><th>Priority Score</th><th>Quick Win</th><th>Status</th><th>Submitted On</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="pill priority-high">High</span></td><td class="link-blue">DM-10045</td>
+              <td>AI Contract Review Assistant</td><td>NHS Digital</td><td>£420,000</td><td>91</td>
+              <td class="qw-yes">Yes</td><td><span class="pill status-review">Under Review</span></td><td>12 Jun 2024</td>
+            </tr>
+            <tr>
+              <td><span class="pill priority-high">High</span></td><td class="link-blue">DM-10032</td>
+              <td>Legal Clause Extraction</td><td>NHS Digital</td><td>£310,000</td><td>88</td>
+              <td class="qw-yes">Yes</td><td><span class="pill status-submitted">Submitted</span></td><td>10 Jun 2024</td>
+            </tr>
+            <tr>
+              <td><span class="pill priority-medium">Medium</span></td><td class="link-blue">DM-10028</td>
+              <td>Contract Risk Scoring</td><td>NHS Digital</td><td>£260,000</td><td>76</td>
+              <td class="qw-no">No</td><td><span class="pill status-submitted">Submitted</span></td><td>09 Jun 2024</td>
+            </tr>
+            <tr>
+              <td><span class="pill priority-medium">Medium</span></td><td class="link-blue">DM-10021</td>
+              <td>Legal Knowledge Search</td><td>NHS Digital</td><td>£180,000</td><td>72</td>
+              <td class="qw-yes">Yes</td><td><span class="pill status-info">More Info Needed</span></td><td>08 Jun 2024</td>
+            </tr>
+            <tr>
+              <td><span class="pill priority-low">Low</span></td><td class="link-blue">DM-10018</td>
+              <td>Policy Comparison Tool</td><td>NHS Digital</td><td>£95,000</td><td>61</td>
+              <td class="qw-no">No</td><td><span class="pill status-draft">Draft</span></td><td>07 Jun 2024</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          <span>Showing 1 to 5 of 9 demands</span>
+          <div class="pg-btns">
+            <span class="pg-btn">‹</span>
+            <span class="pg-btn active">1</span>
+            <span class="pg-btn">2</span>
+            <span class="pg-btn">›</span>
+          </div>
+          <span>Show <b>5</b> ▾</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demand detail right panel -->
+    <div class="hm-detail">
+      <div class="hm-detail-head"><h4>Demand Details</h4><span class="close-x">✕</span></div>
+      <div class="dm-id-row"><span class="dm-id">DM-10045</span><span class="pill priority-high" style="font-size:11px;">High Priority</span></div>
+      <div class="dm-title">AI Contract Review Assistant</div>
+      <div class="dm-tags"><span>NHS Digital</span>|<span>Legal</span>|<span>United Kingdom</span></div>
+      <div class="status-tabs">
+        <span class="status-tab status-review">Under Review</span>
+        <span class="status-tab pill-gray" style="border:1px solid var(--border);">Proactive Proposal</span>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-box"><div class="metric-label">Priority Score</div><div class="metric-val">91 /100</div></div>
+        <div class="metric-box"><div class="metric-label">Strategic Impact</div><div class="metric-val val-high">High</div></div>
+        <div class="metric-box"><div class="metric-label">Business Value</div><div class="metric-val val-high">High</div></div>
+        <div class="metric-box"><div class="metric-label">Est. Annual Value</div><div class="metric-val">£420,000</div></div>
+        <div class="metric-box"><div class="metric-label">ROI Potential</div><div class="metric-val">2.8x</div></div>
+        <div class="metric-box"><div class="metric-label">Ease of Implementation</div><div class="metric-val val-medium">Medium</div></div>
+        <div class="metric-box"><div class="metric-label">Quick Win Potential</div><div class="metric-val val-yes">Yes</div></div>
+        <div class="metric-box"><div class="metric-label">Confidence Level</div><div class="metric-val val-high">High</div></div>
+        <div class="metric-box"><div class="metric-label">Strategic Fit</div><div class="metric-val val-high">High</div></div>
+      </div>
+
+      <div class="detail-section">
+        <h5>Executive Summary</h5>
+        <p>Implement an AI-powered contract review solution to reduce manual review time, improve accuracy, and standardize clause extraction across legal documents.</p>
+      </div>
+
+      <div class="detail-section">
+        <h5>Solution Areas</h5>
+        <span class="chip">Generative AI</span><span class="chip">Document Intelligence</span><span class="chip">NLP</span><span class="chip">Workflow Automation</span>
+      </div>
+
+      <div class="detail-section">
+        <h5>Recommended Solution Approach (High Level)</h5>
+        <p>Start with a focused MVP to ingest contracts, extract key clauses, and provide AI-assisted review with a human-in-the-loop workflow. Expand to full contract lifecycle management based on pilot outcomes.</p>
+      </div>
+
+      <div class="detail-section">
+        <h5>Recommended Skills / Resource Roles (Advisory)</h5>
+        <table class="skills-table">
+          <thead><tr><th>Role</th><th>Key Skills</th><th>FTE Est.</th><th>Phase</th></tr></thead>
+          <tbody>
+            <tr><td>Solution Architect</td><td>Azure AI, Solution Design</td><td>1</td><td>Discovery</td></tr>
+            <tr><td>Data Engineer</td><td>Azure, Data Pipelines</td><td>1-2</td><td>Build</td></tr>
+            <tr><td>ML Engineer</td><td>NLP, LLM, Prompt Eng.</td><td>1-2</td><td>Build</td></tr>
+            <tr><td>Software Developer</td><td>.NET, React, APIs</td><td>2-3</td><td>Build</td></tr>
+            <tr><td>UX / UI Designer</td><td>Workflow UX</td><td>1</td><td>Build</td></tr>
+            <tr><td>QA Engineer</td><td>Test Automation</td><td>1</td><td>Build</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="detail-section">
+        <h5>Additional Information</h5>
+        <div class="add-info-row"><span>Submitted By</span><b>Sarah Thompson (NHS Digital)</b></div>
+        <div class="add-info-row"><span>Submitted On</span><b>12 Jun 2024</b></div>
+        <div class="add-info-row"><span>Last Updated</span><b>14 Jun 2024</b></div>
+        <div class="add-info-row"><span>Account Owner</span><b>James Walker</b></div>
+        <div class="add-info-row"><span>Tags</span><b>AI, Contracts, Automation</b></div>
+        <div class="add-info-row"><span>Attachments</span><b>📎 2 files</b></div>
+      </div>
+
+      <button class="btn view-full-btn">View Full Demand Record ↗</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showPage(page){
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    document.getElementById('page-' + page).style.display = 'block';
+    if(page === 'new-assessment'){
+      document.getElementById('page-new-assessment').style.display = 'flex';
+    }
+
+    document.querySelectorAll('.nav-item, .nav-subitem').forEach(n => n.classList.remove('active'));
+    var active = document.querySelector('[data-page="' + page + '"]');
+    if(active) active.classList.add('active');
+
+    var titles = {
+      'home':'Dashboard',
+      'processes':'Business Processes',
+      'new-assessment':'New Assessment',
+      'drafts':'Drafts'
+    };
+    document.getElementById('page-title').textContent = titles[page] || 'Dashboard';
+
+    var newBtn = document.getElementById('topbar-new-btn');
+    newBtn.style.display = (page === 'new-assessment') ? 'none' : 'inline-flex';
+  }
+
+  function switchApp(app){
+    document.getElementById('bpm-app').classList.remove('active');
+    document.getElementById('heatmap-app').classList.remove('active');
+    document.getElementById(app === 'bpm' ? 'bpm-app' : 'heatmap-app').classList.add('active');
+    document.querySelectorAll('#app-switcher button').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+  }
+
+  // default active nav item
+  document.querySelector('[data-page="home"]').classList.add('active');
+</script>
+
+</body>
+</html>
