@@ -1,0 +1,214 @@
+Updated todo list
+
+Use this portal-only path:
+
+1. Backend on Azure App Service
+2. Frontend on Azure Storage Static Website
+
+This avoids Azure CLI entirely. The only local part is building your frontend once and zipping your backend once.
+
+Before you start
+
+1. Make sure your frontend can call a deployed backend URL.
+If your repo already has production API-base support, continue.
+If not, api.ts must support a value like VITE_API_BASE_URL.
+
+2. Make sure your backend does not only allow localhost in CORS.
+If main.py still only allows localhost, the deployed frontend will fail with CORS errors.
+
+3. Keep these backend values ready from your local .env:
+azure_ai_project_endpoint
+azure_ai_agent_endpoint
+azure_ai_agent_api_version
+azure_openai_endpoint
+azure_ai_api_key
+azure_save_draft_endpoint
+cosmos_account_name
+cosmos_endpoint
+cosmos_key
+cosmos_db_name
+cosmos_container_name
+
+Backend deployment in Azure Portal
+
+1. Open portal.azure.com and sign in.
+
+2. Create a resource group.
+Go to Resource groups.
+Select Create.
+Choose your subscription.
+Set Resource group name, for example rg-demandiq-prod.
+Choose a region, for example East US.
+Select Review + create, then Create.
+
+3. Create the backend Web App.
+Search for App Services.
+Select Create.
+Fill these values:
+Name: a globally unique name such as demq-api-prod-001
+Publish: Code
+Runtime stack: Python 3.12
+Operating System: Linux
+Region: same region as the resource group
+App Service Plan: create new
+Pricing plan: Basic B1 is fine to start
+Select Review + create, then Create.
+
+4. Open the new Web App.
+
+5. Add backend environment variables.
+Inside the Web App, go to Settings, then Environment variables.
+Add each setting from your backend .env:
+azure_ai_project_endpoint
+azure_ai_agent_endpoint
+azure_ai_agent_api_version
+azure_openai_endpoint
+azure_ai_api_key
+azure_save_draft_endpoint
+cosmos_account_name
+cosmos_endpoint
+cosmos_key
+cosmos_db_name
+cosmos_container_name
+Add one more setting:
+SCM_DO_BUILD_DURING_DEPLOYMENT = true
+Select Apply and Save.
+
+6. Configure the startup command.
+In the Web App, go to Settings, then Configuration, then General settings.
+Set Startup Command to:
+
+```text
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+Save the change.
+
+7. Prepare the backend zip locally.
+On your machine, open the backend folder:
+c:/Users/rohit.velivela/DCC Demo/DCC Demo/DemandIQ/DemandIQ-main/backend
+
+Create a zip that contains the backend files directly at the root of the zip.
+Important:
+main.py and requirements.txt must be at the top level inside the zip.
+Do not zip the parent folder itself.
+
+8. Deploy the backend zip from the portal.
+In the Web App, go to Deployment Center.
+Choose Manual deployment if available.
+Choose Zip Deploy or Package deployment if shown.
+Upload your backend zip file.
+Wait for deployment to finish.
+
+If your portal view does not show a direct zip upload option, use this fallback:
+Go to Advanced Tools.
+Select Go.
+In Kudu, open Debug Console.
+Browse to site/wwwroot.
+Upload the backend files there.
+The Deployment Center path is preferred because it handles the build better.
+
+9. Restart the backend app.
+In the Web App overview page, select Restart.
+
+10. Test the backend.
+In the Overview page, copy the Default domain, which will look like:
+https://your-backend-name.azurewebsites.net
+
+Open:
+https://your-backend-name.azurewebsites.net/docs
+
+If docs opens, the backend is running.
+
+Frontend deployment in Azure Portal
+
+1. Build the frontend locally with the real backend URL.
+Use your backend URL from the previous section.
+
+In PowerShell:
+
+```powershell
+Set-Location "c:\Users\rohit.velivela\DCC Demo\DCC Demo\DemandIQ\DemandIQ-main\client"
+$env:VITE_API_BASE_URL = "https://your-backend-name.azurewebsites.net"
+npm install
+npm run build
+```
+
+This should create a dist folder.
+
+2. Create a storage account for static hosting.
+In Azure Portal, search for Storage accounts.
+Select Create.
+Fill these values:
+Name: globally unique, for example stdemandiqprod001
+Region: same as backend
+Performance: Standard
+Redundancy: LRS is fine to start
+Select Review + create, then Create.
+
+3. Enable static website hosting.
+Open the storage account.
+Go to Data management, then Static website.
+Set Static website to Enabled.
+Index document name: index.html
+Error document path: index.html
+Save.
+
+4. Upload the built frontend.
+In the storage account, go to Data storage, then Containers.
+Open the container named $web.
+Upload the contents of the dist folder.
+Important:
+Upload the files inside dist, not the dist folder itself.
+
+5. Copy the frontend URL.
+Back in Static website, copy the Primary endpoint.
+It will look like:
+https://yourstorageaccount.z13.web.core.windows.net
+
+Connect frontend and backend
+
+1. Allow the frontend origin in backend CORS.
+In the Web App, go to API, then CORS if that blade is available.
+Add your frontend URL exactly:
+https://yourstorageaccount.z13.web.core.windows.net
+
+2. If your FastAPI code uses its own CORS middleware, make sure it also allows that URL.
+If your code still only allows localhost, Azure Portal CORS alone may not be enough.
+That part must be fixed in main.py.
+
+3. Restart the backend again after any CORS or config changes.
+
+Validation
+
+1. Open the frontend static website URL.
+2. Start one intake flow.
+3. If the page loads but API calls fail:
+Go to browser DevTools, Network tab.
+Check whether requests are going to:
+https://your-backend-name.azurewebsites.net/api/...
+
+4. If backend requests fail, open backend logs.
+In the Web App, go to Monitoring, then Log stream.
+Keep it open and refresh the frontend.
+You will see server errors there.
+
+Common issues
+
+1. Frontend loads but API fails with CORS.
+Your backend still only allows localhost or does not allow the storage-site origin.
+
+2. Backend returns 500.
+One of the environment variables is missing or wrong.
+Check Environment variables in the Web App and Log stream.
+
+3. Backend deployment succeeds but app does not start.
+Startup command is wrong, or the zip structure is wrong.
+The zip must contain main.py and requirements.txt at the root.
+
+4. Frontend loads blank page.
+You uploaded the dist folder itself instead of the contents inside dist.
+
+If you want, I can do the next practical step now:
+1. Review main.py and api.ts to confirm they are production-ready for this portal deployment.
+2. Give you an exact checklist with the field values you should type into each Azure Portal screen.
